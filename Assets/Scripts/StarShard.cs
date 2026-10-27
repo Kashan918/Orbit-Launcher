@@ -45,14 +45,16 @@ namespace OrbitLauncher
                 _visual.Rotate(0f, 0f, 55f * Time.deltaTime);
             }
 
-            // Slight magnetic attraction when probe is nearby
+            // Magnetic attraction when probe is nearby (scaled by Gravity Magnet Upgrade!)
             if (ProbeController.Instance != null && ProbeController.Instance.CurrentState != ProbeState.DeathAndReset)
             {
+                int magnetLvl = GameManager.Instance != null ? GameManager.Instance.GetUpgradeLevel(0) : 1;
+                float pullDist = 1.65f + (magnetLvl - 1) * 0.75f;
                 Vector2 probePos = ProbeController.Instance.transform.position;
                 float dist = Vector2.Distance(transform.position, probePos);
-                if (dist < 1.85f)
+                if (dist < pullDist)
                 {
-                    transform.position = Vector2.MoveTowards(transform.position, probePos, 9.5f * Time.deltaTime);
+                    transform.position = Vector2.MoveTowards(transform.position, probePos, (9.5f + magnetLvl * 1.5f) * Time.deltaTime);
                 }
                 else
                 {

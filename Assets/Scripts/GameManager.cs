@@ -20,6 +20,7 @@ namespace OrbitLauncher
         public bool IsPlaying { get; private set; }
         public bool IsPaused { get; private set; }
         public bool IsSplashActive { get; private set; } = true;
+        public bool IsInMainMenu { get; private set; }
 
         public int CurrentScore { get; private set; }
         public int BestScore { get; private set; }
@@ -32,6 +33,7 @@ namespace OrbitLauncher
         public int SelectedStartingTier { get; private set; } = 1;
         public int EquippedHullId { get; private set; }
         public bool UseDailySeed { get; private set; }
+        public bool ScreenShakeEnabled { get; private set; } = true;
 
         private readonly List<LeaderboardEntry> _leaderboard = new List<LeaderboardEntry>();
 
@@ -49,32 +51,65 @@ namespace OrbitLauncher
 
         private void Start()
         {
-            // Prepare background world while the animated splash screen runs
             IsSplashActive = true;
+            IsInMainMenu = false;
             IsPlaying = false;
-            int seed = Environment.TickCount;
+            PrepareMenuWorld();
+        }
+
+        private void PrepareMenuWorld()
+        {
+            int seed = UseDailySeed
+                ? (DateTime.UtcNow.Year * 10000 + DateTime.UtcNow.Month * 100 + DateTime.UtcNow.Day)
+                : Environment.TickCount;
+
             if (WorldSpawner.Instance != null)
             {
                 WorldSpawner.Instance.ResetAndGenerateInitialWorld(seed, SelectedStartingTier);
             }
+            if (ProbeController.Instance != null)
+            {
+                ProbeController.Instance.ApplyHull(EquippedHullId);
+                ProbeController.Instance.ParkForMainMenu(new Vector2(-9f, -3f));
+            }
             if (CameraRig.Instance != null)
             {
-                CameraRig.Instance.SnapToTarget(Vector2.zero);
+                CameraRig.Instance.SnapToTarget(new Vector2(0f, 0f));
             }
         }
 
         public void OnSplashCompleted()
         {
             IsSplashActive = false;
-            StartNewRun(false);
+            EnterMainMenu();
+        }
+
+        public void EnterMainMenu()
+        {
+            Time.timeScale = 1f;
+            IsPaused = false;
+            IsPlaying = false;
+            IsInMainMenu = true;
+            PrepareMenuWorld();
+
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayMenuMusic();
+            }
+
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.ShowMainMenu();
+            }
         }
 
         private void LoadPersistentData()
         {
             BestScore = PlayerPrefs.GetInt("OL_BestScore", 0);
-            TotalStarShards = PlayerPrefs.GetInt("OL_TotalShards", 30);
+            TotalStarShards = PlayerPrefs.GetInt("OL_TotalShards", 85); // Starter shards so player can test Upgrades & Skins!
             EquippedHullId = PlayerPrefs.GetInt("OL_EquippedHull", 0);
             HighestTierUnlocked = Mathf.Max(5, PlayerPrefs.GetInt("OL_HighestTier", 5));
+            ScreenShakeEnabled = PlayerPrefs.GetInt("OL_Shake", 1) == 1;
             PlayerPrefs.SetInt("OL_HullUnlocked_0", 1);
 
             LoadLeaderboard();
@@ -83,11 +118,11 @@ namespace OrbitLauncher
         private void LoadLeaderboard()
         {
             _leaderboard.Clear();
-            _leaderboard.Add(new LeaderboardEntry { pilotName = "NOVA-9", score = 18920, tier = 5, hullName = "PULSAR CORE" });
+            _leaderboard.Add(new LeaderboardEntry { pilotName = "NOVA-9", score = 19450, tier = 5, hullName = "PULSAR CORE" });
             _leaderboard.Add(new LeaderboardEntry { pilotName = "VORTEX", score = 14200, tier = 4, hullName = "ION DART" });
             _leaderboard.Add(new LeaderboardEntry { pilotName = "LYRA-X", score = 9800, tier = 3, hullName = "NEON GLIDER" });
             _leaderboard.Add(new LeaderboardEntry { pilotName = "KASHAN", score = Mathf.Max(5400, BestScore), tier = HighestTierUnlocked, hullName = OrbitAssetFactory.Hulls[Mathf.Clamp(EquippedHullId, 0, 3)].name });
-            _leaderboard.Add(new LeaderboardEntry { pilotName = "ORION-7", score = 3200, tier = 2, hullName = "SCOUT PROBE" });
+            _leaderboard.Add(new LeaderboardEntry { pilotName = "ORION-7", score = 3200, tier = 2, hullName = "SCOUT ROCKET" });
             SortLeaderboard();
         }
 
@@ -111,11 +146,53 @@ namespace OrbitLauncher
             UseDailySeed = !UseDailySeed;
         }
 
-        public void StartNewRun(bool fromRetryButton = true)
+        public void ToggleScreenShake()
+        {
+            ScreenShakeEnabled = !ScreenShakeEnabled;
+            PlayerPrefs.SetInt("OL_Shake", ScreenShakeEnabled ? 1 : 0);
+            PlayerPrefs.Save();
+        }
+
+        // --- UPGRADES SYSTEM (Levels 1..5) ---
+        public int GetUpgradeLevel(int upgradeId)
+        {
+            if (upgradeId < 0 || upgradeId >= OrbitAssetFactory.Upgrades.Length) return 1;
+            return Mathf.Clamp(PlayerPrefs.GetInt(OrbitAssetFactory.Upgrades[upgradeId].key, 1), 1, 5);
+        }
+
+        public int GetUpgradeCost(int upgradeId)
+        {
+            if (upgradeId < 0 || upgradeId >= OrbitAssetFactory.Upgrades.Length) return 999;
+            int lvl = GetUpgradeLevel(upgradeId);
+            return OrbitAssetFactory.Upgrades[upgradeId].baseCost * lvl;
+        }
+
+        public bool TryPurchaseUpgrade(int upgradeId)
+        {
+            if (upgradeId < 0 || upgradeId >= OrbitAssetFactory.Upgrades.Length) return false;
+            int lvl = GetUpgradeLevel(upgradeId);
+            if (lvl >= 5) return false;
+            int cost = GetUpgradeCost(upgradeId);
+            if (TotalStarShards < cost) return false;
+
+            TotalStarShards -= cost;
+            PlayerPrefs.SetInt("OL_TotalShards", TotalStarShards);
+            PlayerPrefs.SetInt(OrbitAssetFactory.Upgrades[upgradeId].key, lvl + 1);
+            PlayerPrefs.Save();
+
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayWarpShield();
+            }
+            return true;
+        }
+
+        public void StartNewRun(bool regenerateWorld = false)
         {
             Time.timeScale = 1f;
             IsPaused = false;
             IsSplashActive = false;
+            IsInMainMenu = false;
             IsPlaying = true;
 
             CurrentScore = 0;
@@ -124,28 +201,41 @@ namespace OrbitLauncher
             ComboMultiplier = 1;
             CurrentTier = SelectedStartingTier;
 
-            int seed = UseDailySeed
-                ? (DateTime.UtcNow.Year * 10000 + DateTime.UtcNow.Month * 100 + DateTime.UtcNow.Day)
-                : Environment.TickCount;
-
-            if (WorldSpawner.Instance != null)
+            if (regenerateWorld || WorldSpawner.Instance == null || WorldSpawner.Instance.GetAnchorByHopIndex(0) == null)
             {
-                WorldSpawner.Instance.ResetAndGenerateInitialWorld(seed, SelectedStartingTier);
+                int seed = UseDailySeed
+                    ? (DateTime.UtcNow.Year * 10000 + DateTime.UtcNow.Month * 100 + DateTime.UtcNow.Day)
+                    : Environment.TickCount;
+
+                if (WorldSpawner.Instance != null)
+                {
+                    WorldSpawner.Instance.ResetAndGenerateInitialWorld(seed, SelectedStartingTier);
+                }
             }
 
             if (ProbeController.Instance != null)
             {
+                int boostLvl = GetUpgradeLevel(2);
+                ProbeController.Instance.deepSpaceTimeout = 4.0f + (boostLvl - 1) * 0.55f;
                 ProbeController.Instance.ApplyHull(EquippedHullId);
+
                 GravityAnchor firstAnchor = WorldSpawner.Instance != null ? WorldSpawner.Instance.GetAnchorByHopIndex(0) : null;
                 Vector2 targetPos = firstAnchor != null ? (Vector2)firstAnchor.transform.position : Vector2.zero;
-                Vector2 launchOrigin = targetPos + new Vector2(-4.2f, -1.15f);
-                Vector2 launchDir = (targetPos + new Vector2(0f, -1.2f) - launchOrigin).normalized;
+
+                // Spaceship flies in from bottom-left and locks directly onto the First Planet's orbit circle!
+                Vector2 launchOrigin = targetPos + new Vector2(-4.4f, -1.25f);
+                Vector2 launchDir = (targetPos + new Vector2(0f, -1.15f) - launchOrigin).normalized;
                 ProbeController.Instance.ResetAndLaunch(launchOrigin, launchDir);
 
                 if (CameraRig.Instance != null)
                 {
                     CameraRig.Instance.SnapToTarget(targetPos);
                 }
+            }
+
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayGameplayMusic();
             }
 
             if (UIManager.Instance != null)
@@ -179,10 +269,22 @@ namespace OrbitLauncher
                 }
             }
 
+            int boostLvl = GetUpgradeLevel(2);
+            float scoreBonusMult = 1f + (boostLvl - 1) * 0.20f;
+
             if (anchor.hopIndex == 0)
             {
                 if (AudioManager.Instance != null) AudioManager.Instance.PlayCaptureChime(0);
-                if (VFXManager.Instance != null) VFXManager.Instance.SpawnCapturePulse(anchor.transform.position, anchor.orbitRadius, false);
+                if (VFXManager.Instance != null)
+                {
+                    VFXManager.Instance.SpawnCapturePulse(anchor.transform.position, anchor.orbitRadius, true);
+                    VFXManager.Instance.SpawnFloatingPopup(
+                        (Vector2)anchor.transform.position + Vector2.up * (anchor.orbitRadius + 0.5f),
+                        "ORBIT LOCKED! TAP TO LAUNCH",
+                        OrbitAssetFactory.NeonCyan,
+                        0.95f
+                    );
+                }
                 if (UIManager.Instance != null) UIManager.Instance.UpdateHUD();
                 return;
             }
@@ -194,7 +296,7 @@ namespace OrbitLauncher
                 else if (ConsecutivePerfectHops == 2) ComboMultiplier = 2;
                 else ComboMultiplier = 4;
 
-                int points = 100 * ComboMultiplier;
+                int points = Mathf.RoundToInt(100 * ComboMultiplier * scoreBonusMult);
                 AddScore(points);
 
                 if (AudioManager.Instance != null)
@@ -220,14 +322,17 @@ namespace OrbitLauncher
 
                 if (ConsecutivePerfectHops > 0 && ConsecutivePerfectHops % 5 == 0 && ProbeController.Instance != null)
                 {
-                    ProbeController.Instance.ActivateWarpInvulnerability(3.5f);
+                    int shieldLvl = GetUpgradeLevel(1);
+                    float shieldDur = 3.5f + (shieldLvl - 1) * 0.8f;
+                    ProbeController.Instance.ActivateWarpInvulnerability(shieldDur);
                 }
             }
             else
             {
                 ConsecutivePerfectHops = 0;
                 ComboMultiplier = 1;
-                AddScore(100);
+                int points = Mathf.RoundToInt(100 * scoreBonusMult);
+                AddScore(points);
 
                 if (AudioManager.Instance != null)
                 {
@@ -238,7 +343,7 @@ namespace OrbitLauncher
                     VFXManager.Instance.SpawnCapturePulse(anchor.transform.position, anchor.orbitRadius, false);
                     VFXManager.Instance.SpawnFloatingPopup(
                         (Vector2)anchor.transform.position + Vector2.up * (anchor.orbitRadius + 0.45f),
-                        "CAPTURED +100",
+                        $"CAPTURED +{points}",
                         OrbitAssetFactory.NeonCyan,
                         0.9f
                     );
@@ -369,11 +474,6 @@ namespace OrbitLauncher
                 return true;
             }
             return false;
-        }
-
-        void OnApplicationQuit()
-        {
-            PlayerPrefs.Save();
         }
     }
 }

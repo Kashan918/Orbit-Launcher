@@ -15,13 +15,26 @@ namespace OrbitLauncher
         public string spriteResource;
     }
 
+    public struct UpgradeDefinition
+    {
+        public int id;
+        public string key;
+        public string name;
+        public string description;
+        public int baseCost;
+        public Color themeColor;
+        public string iconSprite;
+    }
+
     public static class OrbitAssetFactory
     {
-        public static readonly Color DeepVoidBlue = new Color(0.02f, 0.031f, 0.075f, 1f); // #050813
+        // Option 3: Vibrant Cosmic Arcade Palette
+        public static readonly Color DeepVoidBlue = new Color(0.055f, 0.024f, 0.145f, 1f); // Deep Cosmic Purple-Blue #0e0625
         public static readonly Color NeonCyan = new Color(0f, 0.941f, 1f, 1f);            // #00f0ff
-        public static readonly Color LimeGreen = new Color(0f, 1f, 0.533f, 1f);           // #00ff88
+        public static readonly Color ArcadePink = new Color(1f, 0.18f, 0.78f, 1f);        // #ff2ec7
+        public static readonly Color LimeGreen = new Color(0.25f, 1f, 0.35f, 1f);         // #40ff59
         public static readonly Color AlertCrimson = new Color(1f, 0.165f, 0.373f, 1f);    // #ff2a5f
-        public static readonly Color StarGold = new Color(1f, 0.84f, 0.25f, 1f);
+        public static readonly Color StarGold = new Color(1f, 0.84f, 0.25f, 1f);          // #ffd640
         public static readonly Color PulsarPurple = new Color(0.72f, 0.32f, 1f, 1f);
 
         private static readonly Dictionary<string, Sprite> _spriteCache = new Dictionary<string, Sprite>();
@@ -34,9 +47,9 @@ namespace OrbitLauncher
             new HullDefinition
             {
                 id = 0,
-                name = "SCOUT PROBE",
-                subtitle = "Starter hull",
-                description = "Lime / cyan triangle with a luminous gradient trail.",
+                name = "SCOUT ROCKET",
+                subtitle = "Starter skin",
+                description = "Lime / cyan delta cruiser with luminous gradient trail.",
                 cost = 0,
                 primaryColor = new Color(0f, 1f, 0.533f, 1f),
                 secondaryColor = new Color(0f, 0.941f, 1f, 1f),
@@ -47,7 +60,7 @@ namespace OrbitLauncher
                 id = 1,
                 name = "NEON GLIDER",
                 subtitle = "Pink / cyan twin trail",
-                description = "Delta wing with a pink and cyan twin trail.",
+                description = "Arcade wing with vibrant magenta and cyan twin trail.",
                 cost = 25,
                 primaryColor = new Color(1f, 0.28f, 0.78f, 1f),
                 secondaryColor = new Color(0f, 0.941f, 1f, 1f),
@@ -57,8 +70,8 @@ namespace OrbitLauncher
             {
                 id = 2,
                 name = "ION DART",
-                subtitle = "Blue / gold ion flame",
-                description = "Slim dart with a high-velocity blue & gold ion flame.",
+                subtitle = "Gold / blue ion flame",
+                description = "High-velocity golden dart with electric blue ion flame.",
                 cost = 60,
                 primaryColor = new Color(1f, 0.85f, 0.25f, 1f),
                 secondaryColor = new Color(0.15f, 0.65f, 1f, 1f),
@@ -69,11 +82,45 @@ namespace OrbitLauncher
                 id = 3,
                 name = "PULSAR CORE",
                 subtitle = "Purple pulse aura",
-                description = "Glowing orb with a gold ring and purple pulse particles.",
+                description = "Glowing cosmic orb with golden rings and purple aura.",
                 cost = 120,
                 primaryColor = new Color(0.75f, 0.35f, 1f, 1f),
                 secondaryColor = new Color(1f, 0.85f, 0.3f, 1f),
                 spriteResource = "hull_pulsar"
+            }
+        };
+
+        public static readonly UpgradeDefinition[] Upgrades = new UpgradeDefinition[]
+        {
+            new UpgradeDefinition
+            {
+                id = 0,
+                key = "OL_Upg_Magnet",
+                name = "GRAVITY MAGNET",
+                description = "Pulls nearby Star Shards & widens Perfect Hop sweet-spot.",
+                baseCost = 15,
+                themeColor = new Color(1f, 0.62f, 0.18f, 1f),
+                iconSprite = "icon_lightning"
+            },
+            new UpgradeDefinition
+            {
+                id = 1,
+                key = "OL_Upg_Shield",
+                name = "WARP SHIELD CORE",
+                description = "Extends Warp Invulnerability duration (+0.8s per level).",
+                baseCost = 20,
+                themeColor = new Color(0f, 0.94f, 1f, 1f),
+                iconSprite = "icon_star_badge"
+            },
+            new UpgradeDefinition
+            {
+                id = 2,
+                key = "OL_Upg_Boost",
+                name = "ION THRUSTERS",
+                description = "Boosts all Hop Score points (+20% per level) & flight range.",
+                baseCost = 25,
+                themeColor = new Color(1f, 0.22f, 0.78f, 1f),
+                iconSprite = "icon_rocket"
             }
         };
 
@@ -101,18 +148,53 @@ namespace OrbitLauncher
             return _additiveMat;
         }
 
+        public static Vector4 GetSpriteBorder(string name)
+        {
+            switch (name)
+            {
+                case "ui_card_arcade":
+                    return new Vector4(64f, 64f, 64f, 64f);
+                case "ui_panel_inset":
+                    return new Vector4(44f, 44f, 44f, 44f);
+                case "ui_pill_gold":
+                case "ui_pill_purple":
+                    return new Vector4(56f, 38f, 56f, 38f);
+                case "ui_btn_play_green":
+                    return new Vector4(70f, 46f, 70f, 46f);
+                case "ui_bar_track":
+                    return new Vector4(28f, 20f, 28f, 20f);
+                case "ui_bar_fill":
+                    return new Vector4(20f, 14f, 20f, 14f);
+                case "ui_squircle_orange":
+                case "ui_squircle_pink":
+                case "ui_squircle_gold":
+                case "ui_squircle_blue":
+                    return new Vector4(44f, 44f, 44f, 44f);
+                default:
+                    return Vector4.zero;
+            }
+        }
+
         public static Sprite GetSprite(string name)
         {
             if (_spriteCache.TryGetValue(name, out Sprite cached) && cached != null)
                 return cached;
 
+            Vector4 border = GetSpriteBorder(name);
             Sprite sp = Resources.Load<Sprite>("Sprites/" + name);
+
+            if (sp != null && border != Vector4.zero && sp.border == Vector4.zero && sp.texture != null)
+            {
+                Texture2D t = sp.texture;
+                sp = Sprite.Create(t, new Rect(0, 0, t.width, t.height), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, border);
+            }
+
             if (sp == null)
             {
                 Texture2D tex = Resources.Load<Texture2D>("Sprites/" + name);
                 if (tex != null)
                 {
-                    sp = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100f);
+                    sp = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, border);
                 }
             }
 
@@ -188,4 +270,3 @@ namespace OrbitLauncher
         }
     }
 }
-

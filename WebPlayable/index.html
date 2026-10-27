@@ -3,22 +3,22 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>ORBIT LAUNCHER • Top-Down Orbital Hopper</title>
+<title>ORBIT LAUNCHER • Vibrant Cosmic Arcade</title>
 <style>
   :root {
-    --void-blue: #050813;
+    --cosmic-bg-1: #0e0524;
+    --cosmic-bg-2: #1c0b42;
     --neon-cyan: #00f0ff;
-    --lime: #00ff88;
-    --crimson: #ff2a5f;
+    --arcade-pink: #ff2ec7;
+    --lime: #3dff58;
     --gold: #ffd644;
-    --purple: #b855ff;
-    --card-bg: rgba(7, 14, 34, 0.86);
+    --purple-card: rgba(44, 18, 88, 0.92);
   }
   * { box-sizing: border-box; user-select: none; -webkit-user-select: none; margin: 0; padding: 0; }
   html, body {
     width: 100%; height: 100%; overflow: hidden;
-    background: var(--void-blue);
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--cosmic-bg-1);
+    font-family: 'Segoe UI', 'Fredoka', system-ui, -apple-system, sans-serif;
     color: #fff;
   }
   canvas {
@@ -26,433 +26,502 @@
     cursor: pointer;
   }
 
-  /* ==================== ANIMATED SPLASH SCREEN ==================== */
+  /* ==================== OPTION 3: GLOSSY ARCADE PILLS & CARDS ==================== */
+  .pill-gold {
+    position: relative;
+    display: flex; align-items: center; gap: 10px;
+    background: linear-gradient(180deg, #4b2b82 0%, #24124d 100%);
+    border: 3px solid #ffc93c;
+    border-radius: 999px;
+    padding: 8px 20px 8px 14px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55), 0 0 18px rgba(255, 201, 60, 0.35), inset 0 2px 3px rgba(255, 255, 255, 0.35);
+  }
+  .pill-purple {
+    position: relative;
+    display: flex; align-items: center; gap: 10px;
+    background: linear-gradient(180deg, #55289c 0%, #291157 100%);
+    border: 3px solid #b46aff;
+    border-radius: 999px;
+    padding: 8px 14px 8px 16px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55), 0 0 18px rgba(180, 106, 255, 0.35), inset 0 2px 3px rgba(255, 255, 255, 0.35);
+  }
+  .btn-circle-settings {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(180deg, #b845ff 0%, #6218b5 100%);
+    border: 3px solid var(--neon-cyan);
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.5), inset 0 3px 4px rgba(255, 255, 255, 0.45);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+  }
+  .btn-circle-settings:hover { transform: scale(1.1) rotate(20deg); box-shadow: 0 0 28px rgba(0, 240, 255, 0.85); }
+  .btn-circle-settings:active { transform: scale(0.92); }
+
+  /* 3D Juicy Green Play Button */
+  .btn-play-green {
+    position: relative;
+    padding: 16px 46px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #a2ff38 0%, #1fd42b 55%, #119e1d 100%);
+    border: 3.5px solid #dcffb2;
+    color: #fff;
+    font-size: clamp(20px, 3.5vw, 28px);
+    font-weight: 900;
+    letter-spacing: 1.2px;
+    text-shadow: 0 3px 0 #0b6312, 0 0 12px rgba(0,0,0,0.5);
+    box-shadow: 0 8px 0 #0c6914, 0 12px 30px rgba(45, 255, 75, 0.55), inset 0 4px 6px rgba(255, 255, 255, 0.65);
+    cursor: pointer;
+    transition: transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+    animation: playBtnPulse 2s ease-in-out infinite;
+  }
+  @keyframes playBtnPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 6px 0 #0c6914, 0 10px 28px rgba(45, 255, 75, 0.5), inset 0 4px 6px rgba(255, 255, 255, 0.65); }
+    50% { transform: scale(1.045); box-shadow: 0 6px 0 #0c6914, 0 14px 42px rgba(45, 255, 75, 0.85), inset 0 4px 6px rgba(255, 255, 255, 0.75); }
+  }
+  .btn-play-green:hover { transform: scale(1.06); }
+  .btn-play-green:active { transform: translateY(4px) scale(0.97); }
+
+  /* Stacked 3D Logo ("ORBIT" Cyan + "LAUNCHER" Pink over Golden Ring) */
+  .logo-emblem-wrap {
+    position: relative;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 12px 0;
+  }
+  .golden-ring {
+    position: absolute;
+    width: clamp(140px, 24vw, 185px);
+    height: clamp(140px, 24vw, 185px);
+    border-radius: 50%;
+    border: 11px solid #ffbe2e;
+    box-shadow: 0 0 26px rgba(255, 190, 46, 0.55), inset 0 0 18px rgba(255, 190, 46, 0.45);
+    background: radial-gradient(circle, rgba(45, 22, 92, 0.75) 0%, rgba(20, 8, 48, 0.9) 100%);
+    pointer-events: none;
+  }
+  .logo-row {
+    position: relative; z-index: 2;
+    display: flex; justify-content: center; gap: 2px;
+    line-height: 1.02;
+  }
+  .logo-ch {
+    display: inline-block;
+    font-weight: 900;
+    animation: letterFloat 2.4s ease-in-out infinite;
+    animation-delay: var(--d, 0s);
+  }
+  .logo-ch.cyan {
+    font-size: clamp(36px, 6.5vw, 56px);
+    color: #36f3ff;
+    -webkit-text-stroke: 2px #09457a;
+    text-shadow: 0 5px 0 #072c54, 0 0 22px rgba(0, 240, 255, 0.75);
+  }
+  .logo-ch.pink {
+    font-size: clamp(34px, 6vw, 52px);
+    color: #ff38cb;
+    -webkit-text-stroke: 2px #6e0b56;
+    text-shadow: 0 5px 0 #470537, 0 0 22px rgba(255, 46, 199, 0.75);
+  }
+  @keyframes letterFloat {
+    0%, 100% { transform: translateY(0px) scale(1); }
+    50% { transform: translateY(-6px) scale(1.04); }
+  }
+  .logo-sub {
+    position: relative; z-index: 2;
+    margin-top: 14px;
+    font-size: clamp(14px, 2.5vw, 19px);
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 2px 10px rgba(0, 240, 255, 0.5);
+  }
+
+  /* ==================== 1. ANIMATED SPLASH SCREEN ==================== */
   #splashScreen {
     position: absolute; inset: 0; z-index: 100;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: radial-gradient(circle at 50% 42%, rgba(8, 22, 54, 0.45) 0%, rgba(5, 8, 19, 0.82) 100%);
-    transition: opacity 0.65s cubic-bezier(0.4, 0, 0.2, 1), transform 0.65s cubic-bezier(0.4, 0, 0.2, 1);
-    pointer-events: auto;
+    background: radial-gradient(circle at 50% 42%, rgba(45, 16, 92, 0.45) 0%, rgba(12, 5, 32, 0.85) 100%);
+    transition: opacity 0.55s ease, transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
   }
   #splashScreen.hide {
-    opacity: 0;
-    transform: scale(1.08);
-    pointer-events: none;
+    opacity: 0; transform: scale(1.08); pointer-events: none;
   }
-  .splash-card {
-    position: relative;
-    width: 92%; max-width: 680px;
-    background: rgba(6, 13, 32, 0.78);
-    border: 1.5px solid rgba(0, 240, 255, 0.45);
-    border-radius: 24px;
-    padding: 38px 32px 34px;
+  .splash-box {
+    width: 92%; max-width: 560px;
+    background: linear-gradient(180deg, rgba(58, 24, 112, 0.88) 0%, rgba(24, 9, 54, 0.92) 100%);
+    border: 3px solid #c96eff;
+    border-radius: 32px;
+    padding: 34px 28px 30px;
     text-align: center;
     backdrop-filter: blur(12px);
-    box-shadow: 0 0 60px rgba(0, 240, 255, 0.18), inset 0 0 30px rgba(0, 240, 255, 0.06);
-    animation: cardFloat 4s ease-in-out infinite;
-  }
-  @keyframes cardFloat {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-7px); }
-  }
-  .splash-badge {
-    display: inline-block;
-    padding: 5px 16px;
-    border-radius: 999px;
-    background: rgba(0, 255, 136, 0.12);
-    border: 1px solid rgba(0, 255, 136, 0.45);
-    color: var(--lime);
-    font-size: 11px; font-weight: 800; letter-spacing: 2.2px;
-    margin-bottom: 18px;
-    animation: badgePulse 2.4s ease-in-out infinite;
-  }
-  @keyframes badgePulse {
-    0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.15); }
-    50% { box-shadow: 0 0 22px rgba(0, 255, 136, 0.45); }
-  }
-
-  /* Per-Letter Animated Game Name */
-  .animated-title {
-    display: flex; flex-wrap: wrap; justify-content: center; gap: 3px;
-    margin-bottom: 10px;
-    perspective: 600px;
-  }
-  .title-letter {
-    display: inline-block;
-    font-size: clamp(30px, 6vw, 54px);
-    font-weight: 900;
-    letter-spacing: 1px;
-    color: #fff;
-    text-shadow: 0 0 18px rgba(0, 240, 255, 0.75), 0 0 36px rgba(0, 240, 255, 0.35);
-    opacity: 0;
-    transform: translateY(28px) scale(0.3) rotateX(-45deg);
-    animation:
-      letterPopIn 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
-      letterWave 2.4s ease-in-out infinite;
-    animation-delay: var(--pop-delay, 0s), var(--wave-delay, 0.6s);
-  }
-  .title-letter.orbit-word {
-    color: var(--neon-cyan);
-    text-shadow: 0 0 20px rgba(0, 240, 255, 0.9), 0 0 40px rgba(0, 255, 136, 0.4);
-  }
-  .title-letter.space { width: clamp(12px, 2.5vw, 22px); }
-
-  @keyframes letterPopIn {
-    0% { opacity: 0; transform: translateY(28px) scale(0.3) rotateX(-45deg); }
-    70% { opacity: 1; transform: translateY(-6px) scale(1.12) rotateX(8deg); }
-    100% { opacity: 1; transform: translateY(0px) scale(1) rotateX(0deg); }
-  }
-  @keyframes letterWave {
-    0%, 100% {
-      transform: translateY(0px) scale(1);
-      filter: brightness(1);
-    }
-    50% {
-      transform: translateY(-8px) scale(1.06);
-      filter: brightness(1.3) drop-shadow(0 0 10px var(--lime));
-    }
-  }
-
-  .splash-subtitle {
-    font-size: 14px; font-weight: 800; letter-spacing: 3.2px;
-    color: #b4d8ff; margin-bottom: 30px;
-    opacity: 0;
-    animation: fadeSlideUp 0.6s ease forwards 0.65s;
-  }
-  @keyframes fadeSlideUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* Loading Bar Container */
-  .loading-wrap {
-    width: 100%; max-width: 520px; margin: 0 auto;
-    opacity: 0;
-    animation: fadeSlideUp 0.6s ease forwards 0.8s;
+    box-shadow: 0 16px 50px rgba(0,0,0,0.65), 0 0 40px rgba(201, 110, 255, 0.35), inset 0 2px 4px rgba(255,255,255,0.35);
   }
   .loading-track {
-    position: relative;
-    width: 100%; height: 16px;
-    background: rgba(3, 7, 18, 0.95);
-    border: 1.5px solid rgba(0, 240, 255, 0.45);
+    width: 100%; height: 24px; margin-top: 24px;
+    background: #160733;
+    border: 3px solid #ffc93c;
     border-radius: 999px;
-    overflow: hidden;
-    box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.8), 0 0 18px rgba(0, 240, 255, 0.18);
+    padding: 3px;
+    box-shadow: inset 0 3px 8px rgba(0,0,0,0.8), 0 0 18px rgba(255, 201, 60, 0.35);
   }
   .loading-fill {
-    position: relative;
     width: 0%; height: 100%;
     border-radius: 999px;
-    background: linear-gradient(90deg, var(--neon-cyan), var(--lime), #ffffff);
-    box-shadow: 0 0 20px var(--lime);
+    background: linear-gradient(90deg, #00f0ff, #3dff58, #a2ff38);
+    box-shadow: 0 0 16px #3dff58;
     transition: width 0.08s linear;
-  }
-  .loading-fill::after {
-    content: '';
-    position: absolute; inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.65), transparent);
-    animation: barShimmer 1.1s linear infinite;
-  }
-  @keyframes barShimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
   }
   .loading-meta {
     display: flex; justify-content: space-between; align-items: center;
-    margin-top: 10px; font-size: 12px; font-weight: 800; letter-spacing: 1.3px;
+    margin-top: 10px; font-size: 13px; font-weight: 800;
   }
-  #splashStatus { color: var(--neon-cyan); }
-  #splashPercent { color: var(--lime); font-size: 14px; }
 
-  /* ==================== GAMEPLAY HUD & UI ANIMATIONS ==================== */
+  /* ==================== 2. OPTION 3 INTERACTIVE MAIN MENU ==================== */
+  #mainMenu {
+    position: absolute; inset: 0; z-index: 30;
+    display: flex; flex-direction: column; justify-content: space-between; align-items: center;
+    padding: 20px 22px 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.45s ease;
+  }
+  #mainMenu.visible { opacity: 1; }
+  #mainMenu.visible .mm-interactive { pointer-events: auto; }
+
+  .mm-top-bar {
+    width: 100%; max-width: 680px;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    transition: transform 0.42s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.38s ease;
+  }
+  .mm-logo-section {
+    margin-top: -10px;
+    transition: transform 0.42s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.38s ease;
+  }
+  /* Center spacer leaves room for the live First Planet & Dotted Orbit Ring! */
+  .mm-planet-viewport-spacer {
+    flex: 1; min-height: 210px;
+  }
+  .mm-bottom-section {
+    width: 100%; max-width: 640px;
+    display: flex; flex-direction: column; align-items: center; gap: 22px;
+    transition: transform 0.42s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.38s ease;
+  }
+  #mainMenu.launching .mm-top-bar { transform: translateY(-120px); opacity: 0; }
+  #mainMenu.launching .mm-logo-section { transform: translateY(-140px) scale(0.85); opacity: 0; }
+  #mainMenu.launching .mm-bottom-section { transform: translateY(220px); opacity: 0; }
+
+  /* Bottom 4-Squircle Arcade Dock */
+  .arcade-dock {
+    width: 100%;
+    background: linear-gradient(180deg, rgba(64, 28, 125, 0.92) 0%, rgba(30, 12, 68, 0.96) 100%);
+    border-top: 3px solid rgba(195, 120, 255, 0.65);
+    border-left: 2px solid rgba(195, 120, 255, 0.35);
+    border-right: 2px solid rgba(195, 120, 255, 0.35);
+    border-radius: 34px 34px 0 0;
+    padding: 16px 18px 20px;
+    display: flex; justify-content: space-around; align-items: center;
+    box-shadow: 0 -10px 35px rgba(0, 0, 0, 0.6), 0 0 25px rgba(165, 80, 255, 0.25);
+  }
+  .dock-item {
+    display: flex; flex-direction: column; align-items: center; gap: 7px;
+    cursor: pointer;
+    transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .dock-item:hover { transform: translateY(-6px) scale(1.06); }
+  .dock-item:active { transform: scale(0.93); }
+  .squircle {
+    width: 68px; height: 68px;
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.5), inset 0 3px 4px rgba(255,255,255,0.4);
+  }
+  .squircle.orange {
+    background: linear-gradient(180deg, #682b7d 0%, #33134a 100%);
+    border: 3px solid #ff9d2e;
+    box-shadow: 0 0 18px rgba(255, 157, 46, 0.45), inset 0 2px 4px rgba(255,255,255,0.35);
+  }
+  .squircle.pink {
+    background: linear-gradient(180deg, #682480 0%, #311047 100%);
+    border: 3px solid #ff38cb;
+    box-shadow: 0 0 18px rgba(255, 56, 203, 0.45), inset 0 2px 4px rgba(255,255,255,0.35);
+  }
+  .squircle.gold {
+    background: linear-gradient(180deg, #633c75 0%, #2f1942 100%);
+    border: 3px solid #ffd644;
+    box-shadow: 0 0 18px rgba(255, 214, 68, 0.45), inset 0 2px 4px rgba(255,255,255,0.35);
+  }
+  .squircle.blue {
+    background: linear-gradient(180deg, #254596 0%, #122154 100%);
+    border: 3px solid #00eaff;
+    box-shadow: 0 0 18px rgba(0, 234, 255, 0.45), inset 0 2px 4px rgba(255,255,255,0.35);
+  }
+  .dock-lbl {
+    font-size: 12px; font-weight: 900; letter-spacing: 0.8px; color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+  }
+
+  .plus-badge {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: linear-gradient(180deg, #6bff42 0%, #16ad24 100%);
+    border: 2px solid #d4ffba;
+    color: #fff; font-weight: 900; font-size: 17px; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(61, 255, 88, 0.6);
+  }
+
+  /* ==================== 3. GAMEPLAY HUD ==================== */
   #hud {
     position: absolute; inset: 0; pointer-events: none;
     display: flex; flex-direction: column; justify-content: space-between;
     padding: 18px 22px;
-    opacity: 0; transform: translateY(-10px);
-    transition: opacity 0.55s ease, transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+    opacity: 0; transform: translateY(-16px);
+    transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  #hud.hud-visible {
-    opacity: 1; transform: translateY(0);
-  }
+  #hud.hud-visible { opacity: 1; transform: translateY(0); }
   .top-bar {
     display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
   }
-  .hud-card {
-    background: var(--card-bg);
-    border: 1.5px solid rgba(0, 240, 255, 0.42);
-    border-radius: 12px;
-    padding: 10px 18px;
-    backdrop-filter: blur(8px);
-    box-shadow: 0 0 22px rgba(0, 240, 255, 0.14);
-    pointer-events: auto;
-    transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.25s, box-shadow 0.25s;
-  }
-  .hud-card.pop-punch {
-    transform: scale(1.15);
-  }
-  .score-box { min-width: 165px; }
-  .hud-label {
-    font-size: 11px; font-weight: 800; letter-spacing: 1.4px;
-    color: #8ab8e6; text-transform: uppercase;
-  }
-  .score-val {
-    font-size: 30px; font-weight: 900; letter-spacing: 0.5px; color: #fff;
-    line-height: 1.15;
-  }
-  .combo-box {
-    text-align: center; min-width: 195px;
-  }
-  .combo-box.active-combo {
-    border-color: var(--lime);
-    box-shadow: 0 0 28px rgba(0, 255, 136, 0.32);
-    animation: comboGlowPulse 1.6s ease-in-out infinite;
-  }
-  @keyframes comboGlowPulse {
-    0%, 100% { box-shadow: 0 0 22px rgba(0, 255, 136, 0.25); }
-    50% { box-shadow: 0 0 36px rgba(0, 255, 136, 0.55); }
-  }
-  .combo-label { color: var(--lime); }
-  .combo-val {
-    font-size: 26px; font-weight: 900; color: #fff; line-height: 1.15;
-  }
-  .warp-pips {
-    display: flex; gap: 5px; justify-content: center; margin-top: 5px;
-  }
+  .hud-Interactive { pointer-events: auto; transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .hud-Interactive.pop-punch { transform: scale(1.16); }
+
+  .warp-pips { display: flex; gap: 5px; justify-content: center; margin-top: 4px; }
   .warp-pip {
-    width: 22px; height: 5px; border-radius: 3px;
-    background: rgba(255, 255, 255, 0.16);
-    transition: background 0.25s, box-shadow 0.25s, transform 0.25s;
+    width: 20px; height: 5px; border-radius: 3px;
+    background: rgba(255, 255, 255, 0.18);
+    transition: background 0.25s, box-shadow 0.25s;
   }
-  .warp-pip.filled { background: var(--lime); box-shadow: 0 0 8px var(--lime); transform: scaleY(1.25); }
-  .warp-pip.shield { background: var(--neon-cyan); box-shadow: 0 0 10px var(--neon-cyan); transform: scaleY(1.35); }
+  .warp-pip.filled { background: var(--lime); box-shadow: 0 0 8px var(--lime); }
+  .warp-pip.shield { background: var(--neon-cyan); box-shadow: 0 0 10px var(--neon-cyan); }
 
-  .right-controls {
-    display: flex; align-items: center; gap: 10px; pointer-events: auto;
-  }
-  .shard-pill {
-    display: flex; align-items: center; gap: 8px;
-    padding: 10px 16px; border-radius: 12px;
-    background: var(--card-bg);
-    border: 1.5px solid rgba(255, 214, 68, 0.45);
-    font-weight: 800; font-size: 20px;
-    transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  .shard-pill.pop-punch { transform: scale(1.18); border-color: var(--gold); }
-  .shard-diamond {
-    width: 14px; height: 14px; background: var(--gold);
-    transform: rotate(45deg);
-    box-shadow: 0 0 10px var(--gold);
-    animation: diamondSpin 3s ease-in-out infinite;
-  }
-  @keyframes diamondSpin {
-    0%, 100% { transform: rotate(45deg) scale(1); }
-    50% { transform: rotate(225deg) scale(1.15); }
-  }
-  .icon-btn {
-    width: 46px; height: 46px; border-radius: 12px;
-    background: var(--card-bg);
-    border: 1.5px solid rgba(0, 240, 255, 0.45);
-    color: #fff; font-weight: 900; font-size: 16px;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s, box-shadow 0.2s;
-  }
-  .icon-btn:hover { border-color: var(--lime); transform: translateY(-2px) scale(1.08); box-shadow: 0 0 16px rgba(0,255,136,0.35); }
-  .icon-btn:active { transform: scale(0.92); }
-
-  /* Tier Banner */
   #tierBanner {
     align-self: center;
-    background: rgba(5, 11, 28, 0.92);
-    border: 1.5px solid var(--neon-cyan);
-    border-radius: 14px;
-    padding: 12px 26px;
+    background: linear-gradient(180deg, rgba(64, 24, 122, 0.94) 0%, rgba(28, 10, 62, 0.96) 100%);
+    border: 3px solid var(--neon-cyan);
+    border-radius: 22px;
+    padding: 12px 28px;
     text-align: center;
     max-width: 500px;
-    opacity: 0; transform: translateY(-22px) scale(0.92);
-    transition: opacity 0.38s ease, transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 0 30px rgba(0, 240, 255, 0.22);
+    opacity: 0; transform: translateY(-20px) scale(0.92);
+    transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 25px rgba(0, 240, 255, 0.3);
   }
   #tierBanner.show { opacity: 1; transform: translateY(0) scale(1); }
-  #tierTag { font-size: 11px; font-weight: 800; letter-spacing: 1.6px; color: var(--neon-cyan); }
-  #tierName { font-size: 24px; font-weight: 900; margin: 2px 0; }
-  #tierTip { font-size: 13px; color: #b5d3f0; }
 
-  /* Bottom Pill */
-  .bottom-bar {
-    display: flex; flex-direction: column; align-items: center; gap: 10px;
-  }
+  .bottom-bar { display: flex; flex-direction: column; align-items: center; }
   .tap-pill {
-    background: rgba(6, 14, 32, 0.82);
-    border: 1.5px solid rgba(0, 240, 255, 0.4);
+    background: linear-gradient(180deg, rgba(68, 28, 128, 0.88) 0%, rgba(28, 11, 64, 0.92) 100%);
+    border: 2.5px solid #b46aff;
     border-radius: 999px;
-    padding: 9px 28px;
-    font-size: 13px; font-weight: 800; letter-spacing: 1.5px;
-    color: #d8f3ff;
-    box-shadow: 0 0 18px rgba(0, 240, 255, 0.15);
+    padding: 10px 30px;
+    font-size: 13px; font-weight: 900; letter-spacing: 1.4px;
+    color: #fff;
+    box-shadow: 0 0 20px rgba(180, 106, 255, 0.35);
     animation: pillBreath 1.8s ease-in-out infinite;
   }
   @keyframes pillBreath {
-    0%, 100% { transform: scale(1); border-color: rgba(0, 240, 255, 0.4); }
-    50% { transform: scale(1.04); border-color: rgba(0, 255, 136, 0.75); }
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.04); border-color: var(--neon-cyan); }
   }
 
-  /* Modals with Spring Pop-In Animation */
+  /* ==================== 4. GLOSSY ARCADE MODALS ==================== */
   .modal-overlay {
     position: absolute; inset: 0;
-    background: rgba(3, 6, 16, 0.86);
+    background: rgba(10, 3, 26, 0.85);
     backdrop-filter: blur(10px);
     display: none; align-items: center; justify-content: center;
-    z-index: 20; padding: 20px;
+    z-index: 60; padding: 18px;
   }
-  .modal-overlay.active {
-    display: flex;
-    animation: overlayFadeIn 0.25s ease forwards;
-  }
-  @keyframes overlayFadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
+  .modal-overlay.active { display: flex; }
   .modal-card {
-    width: 100%; max-width: 460px;
-    background: rgba(8, 15, 36, 0.96);
-    border: 1.5px solid rgba(0, 240, 255, 0.5);
-    border-radius: 20px;
-    padding: 28px 26px;
+    width: 100%; max-width: 480px;
+    background: linear-gradient(180deg, #3c1978 0%, #1b093d 100%);
+    border: 3.5px solid #d16eff;
+    border-radius: 28px;
+    padding: 26px 24px;
     text-align: center;
-    box-shadow: 0 0 50px rgba(0, 240, 255, 0.2);
-    animation: modalSpringIn 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    box-shadow: 0 18px 55px rgba(0,0,0,0.75), 0 0 38px rgba(209, 110, 255, 0.35), inset 0 3px 5px rgba(255,255,255,0.35);
+    animation: modalSpringIn 0.36s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   }
   @keyframes modalSpringIn {
     0% { opacity: 0; transform: scale(0.8) translateY(24px); }
     100% { opacity: 1; transform: scale(1) translateY(0); }
   }
-  .modal-title { font-size: 36px; font-weight: 900; letter-spacing: 1.5px; }
-  .modal-sub { font-size: 14px; color: var(--crimson); margin-top: 4px; margin-bottom: 20px; font-weight: 600; }
+  .modal-title {
+    font-size: 30px; font-weight: 900; letter-spacing: 1px;
+    color: var(--gold);
+    text-shadow: 0 3px 0 #593200, 0 0 18px rgba(255, 214, 68, 0.45);
+  }
+  .modal-sub { font-size: 14px; color: #e2b8ff; margin-top: 4px; margin-bottom: 18px; font-weight: 700; }
+
+  .item-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    background: rgba(20, 7, 48, 0.85);
+    border: 2px solid rgba(180, 106, 255, 0.45);
+    border-radius: 18px;
+    padding: 12px 14px; margin-bottom: 10px; text-align: left;
+  }
+  .item-info h4 { font-size: 15px; font-weight: 900; }
+  .item-info p { font-size: 12px; color: #cbb5e8; margin-top: 2px; }
+  .lvl-pips { display: flex; gap: 4px; margin-top: 6px; }
+  .lvl-pip { width: 22px; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.15); }
+  .lvl-pip.on { background: var(--lime); box-shadow: 0 0 8px var(--lime); }
+
+  .action-pill-btn {
+    padding: 10px 16px; border-radius: 999px;
+    background: linear-gradient(180deg, #98ff38 0%, #19bf25 100%);
+    border: 2.5px solid #dcffb2;
+    color: #fff; font-weight: 900; font-size: 13px;
+    text-shadow: 0 2px 0 #0a5910;
+    cursor: pointer; min-width: 98px; text-align: center;
+    box-shadow: 0 4px 0 #0c6914;
+    transition: transform 0.14s;
+  }
+  .action-pill-btn:hover { transform: scale(1.06); }
+  .action-pill-btn:active { transform: translateY(2px); }
+
   .stats-table {
-    background: rgba(3, 7, 19, 0.9);
-    border: 1px solid rgba(0, 240, 255, 0.24);
-    border-radius: 14px;
-    padding: 14px 20px;
-    margin-bottom: 22px;
+    background: rgba(18, 6, 44, 0.88);
+    border: 2px solid rgba(180, 106, 255, 0.4);
+    border-radius: 18px;
+    padding: 14px 18px; margin-bottom: 20px;
   }
   .stat-row {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.08);
   }
   .stat-row:last-child { border-bottom: none; }
-  .stat-lbl { font-size: 13px; font-weight: 700; color: #7fa6cc; letter-spacing: 1px; }
+  .stat-lbl { font-size: 13px; font-weight: 800; color: #b99de0; }
   .stat-val { font-size: 20px; font-weight: 900; }
 
-  .primary-btn {
-    width: 100%; padding: 16px;
-    border-radius: 999px;
-    background: linear-gradient(90deg, rgba(0, 255, 136, 0.22), rgba(0, 240, 255, 0.22));
-    border: 2px solid var(--lime);
-    color: #fff; font-size: 18px; font-weight: 900; letter-spacing: 1.5px;
-    cursor: pointer;
-    box-shadow: 0 0 24px rgba(0, 255, 136, 0.3);
-    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
-    animation: btnPulse 2s ease-in-out infinite;
-  }
-  @keyframes btnPulse {
-    0%, 100% { transform: scale(1); box-shadow: 0 0 22px rgba(0, 255, 136, 0.28); }
-    50% { transform: scale(1.03); box-shadow: 0 0 34px rgba(0, 255, 136, 0.55); }
-  }
-  .primary-btn:hover { transform: scale(1.05); box-shadow: 0 0 38px rgba(0, 255, 136, 0.65); }
-  .primary-btn:active { transform: scale(0.96); }
-
-  .nav-links {
-    display: flex; justify-content: center; gap: 14px; margin-top: 18px;
-  }
-  .sec-btn {
-    padding: 9px 18px; border-radius: 10px;
-    background: rgba(14, 28, 60, 0.85);
-    border: 1px solid rgba(0, 240, 255, 0.4);
-    color: #bfe8ff; font-size: 13px; font-weight: 700;
-    cursor: pointer;
-    transition: transform 0.15s, border-color 0.2s, color 0.2s;
-  }
-  .sec-btn:hover { border-color: var(--lime); color: #fff; transform: translateY(-2px); }
-
-  /* Hulls List */
-  .hull-item {
-    display: flex; align-items: center; justify-content: space-between;
-    background: rgba(4, 9, 24, 0.9);
-    border: 1.5px solid rgba(0, 240, 255, 0.3);
-    border-radius: 12px;
-    padding: 12px 14px; margin-bottom: 10px; text-align: left;
-    transition: transform 0.16s, border-color 0.2s;
-  }
-  .hull-item:hover { transform: translateX(4px); border-color: var(--neon-cyan); }
-  .hull-info h4 { font-size: 15px; font-weight: 800; }
-  .hull-info p { font-size: 12px; color: #9ab8d9; margin-top: 2px; }
-  .hull-btn {
-    padding: 8px 14px; border-radius: 8px;
-    border: 1.5px solid var(--lime);
-    background: rgba(0, 255, 136, 0.15);
-    color: #fff; font-weight: 800; font-size: 12px; cursor: pointer;
-    min-width: 96px; text-align: center;
-    transition: transform 0.14s, background 0.2s;
-  }
-  .hull-btn:hover { transform: scale(1.06); background: rgba(0, 255, 136, 0.3); }
+  .nav-links { display: flex; justify-content: center; gap: 10px; margin-top: 16px; }
 </style>
 </head>
 <body>
 
 <canvas id="gameCanvas"></canvas>
 
-<!-- ==================== ANIMATED SPLASH SCREEN ==================== -->
+<!-- ==================== 1. VIBRANT COSMIC ARCADE SPLASH SCREEN ==================== -->
 <div id="splashScreen">
-  <div class="splash-card">
-    <div class="splash-badge">COSMIC ARCADE EDITION • V1.1</div>
-    <div class="animated-title" id="animatedTitle"></div>
-    <div class="splash-subtitle">TOP-DOWN ORBITAL HOPPER</div>
+  <div class="splash-box">
+    <div class="logo-emblem-wrap">
+      <div class="golden-ring"></div>
+      <div class="logo-row" id="splashRow1"></div>
+      <div class="logo-row" id="splashRow2"></div>
+      <div class="logo-sub">Top-Down Orbital Hopper</div>
+    </div>
 
-    <div class="loading-wrap">
-      <div class="loading-track">
-        <div class="loading-fill" id="splashBarFill"></div>
+    <div class="loading-track">
+      <div class="loading-fill" id="splashBarFill"></div>
+    </div>
+    <div class="loading-meta">
+      <span id="splashStatus" style="color:var(--neon-cyan)">IGNITING COSMIC NEBULA...</span>
+      <span id="splashPercent" style="color:var(--lime)">0%</span>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 2. OPTION 3 INTERACTIVE MAIN MENU ==================== -->
+<div id="mainMenu">
+  <!-- Top Bar: Best Score Gold Pill, Star Shards Purple Pill, Settings Gear -->
+  <div class="mm-top-bar mm-interactive">
+    <div class="pill-gold">
+      <svg width="32" height="32" viewBox="0 0 64 64"><path fill="#ffd644" d="M16 10h32v16c0 10-7 18-16 18s-16-8-16-18V10zm-8 4h6v10c0 4 2 7 5 9-7-2-11-8-11-15v-4zm48 0v4c0 7-4 13-11 15 3-2 5-5 5-9V14h6zM26 44h12v10H26zm-8 8h28v6H18z"/></svg>
+      <div style="text-align:left; line-height:1.05">
+        <div style="font-size:11px; font-weight:900; color:var(--gold)">BEST:</div>
+        <div style="font-size:22px; font-weight:900" id="mmBestScore">19,450</div>
       </div>
-      <div class="loading-meta">
-        <span id="splashStatus">INITIALIZING GRAVITY WELLS...</span>
-        <span id="splashPercent">0%</span>
+    </div>
+
+    <div class="pill-purple">
+      <svg width="30" height="30" viewBox="0 0 64 64"><polygon fill="#ff5ee0" points="18,12 46,12 58,28 32,56 6,28"/><polygon fill="#60f0ff" points="32,12 46,12 58,28 32,56"/></svg>
+      <span style="font-size:23px; font-weight:900" id="mmShards">85</span>
+      <button class="plus-badge" id="btnPlusShards" title="Upgrade Ship">+</button>
+    </div>
+
+    <button class="btn-circle-settings" id="btnOpenSettings" title="Settings">
+      <svg width="30" height="30" viewBox="0 0 64 64"><path fill="#70f8ff" d="M54 28h-5.3c-.6-2.3-1.5-4.5-2.8-6.4l3.8-3.8-5.6-5.6-3.8 3.8c-1.9-1.3-4.1-2.2-6.4-2.8V8h-8v5.3c-2.3.6-4.5 1.5-6.4 2.8l-3.8-3.8-5.6 5.6 3.8 3.8c-1.3 1.9-2.2 4.1-2.8 6.4H6v8h5.3c.6 2.3 1.5 4.5 2.8 6.4l-3.8 3.8 5.6 5.6 3.8-3.8c1.9 1.3 4.1 2.2 6.4 2.8V56h8v-5.3c2.3-.6 4.5-1.5 6.4-2.8l3.8 3.8 5.6-5.6-3.8-3.8c1.3-1.9 2.2-4.1 2.8-6.4H54v-8zM30 42c-5.5 0-10-4.5-10-10s4.5-10 10-10 10 4.5 10 10-4.5 10-10 10z"/></svg>
+    </button>
+  </div>
+
+  <!-- Top-Center Emblem: Golden Ring + 3D Floating ORBIT LAUNCHER -->
+  <div class="mm-logo-section">
+    <div class="logo-emblem-wrap">
+      <div class="golden-ring"></div>
+      <div class="logo-row" id="mmRow1"></div>
+      <div class="logo-row" id="mmRow2"></div>
+      <div class="logo-sub">Top-Down Orbital Hopper</div>
+    </div>
+  </div>
+
+  <!-- Open Viewport Spacer where the Live First Planet & Orbit Circle sit! -->
+  <div class="mm-planet-viewport-spacer"></div>
+
+  <!-- Bottom Section: Juicy 3D Green "TAP TO PLAY >" + 4-Button Arcade Dock -->
+  <div class="mm-bottom-section mm-interactive">
+    <button class="btn-play-green" id="btnTapToPlay">TAP TO PLAY &nbsp; &#10095;</button>
+
+    <div class="arcade-dock">
+      <div class="dock-item" id="dockUpgrades">
+        <div class="squircle orange">
+          <svg width="38" height="38" viewBox="0 0 64 64"><polygon fill="#ffd644" points="38,6 14,36 30,36 24,58 50,26 34,26"/></svg>
+        </div>
+        <span class="dock-lbl">UPGRADES</span>
+      </div>
+
+      <div class="dock-item" id="dockSkins">
+        <div class="squircle pink">
+          <svg width="38" height="38" viewBox="0 0 64 64"><path fill="#00f0ff" d="M52 12c-14 2-26 12-32 26l12 12c14-6 24-18 26-32 0-3-3-6-6-6z"/><circle fill="#ffd644" cx="36" cy="28" r="6"/><polygon fill="#ff2ec7" points="20,38 10,44 18,52 26,44"/><circle fill="#ffae2e" cx="14" cy="50" r="5"/></svg>
+        </div>
+        <span class="dock-lbl">SKINS</span>
+      </div>
+
+      <div class="dock-item" id="dockRanks">
+        <div class="squircle gold">
+          <svg width="38" height="38" viewBox="0 0 64 64"><path fill="#ffd644" d="M16 10h32v16c0 10-7 18-16 18s-16-8-16-18V10zm10 34h12v10H26zm-8 8h28v6H18z"/></svg>
+        </div>
+        <span class="dock-lbl">RANKS</span>
+      </div>
+
+      <div class="dock-item" id="dockMissions">
+        <div class="squircle blue">
+          <svg width="38" height="38" viewBox="0 0 64 64"><circle fill="#1e6ef5" stroke="#ffd644" stroke-width="4" cx="32" cy="32" r="22"/><polygon fill="#ffd644" points="32,15 37,26 49,27 40,35 42,47 32,41 22,47 24,35 15,27 27,26"/></svg>
+        </div>
+        <span class="dock-lbl">MISSIONS</span>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ==================== GAMEPLAY HUD ==================== -->
+<!-- ==================== 3. GAMEPLAY HUD ==================== -->
 <div id="hud">
   <div class="top-bar">
-    <div class="hud-card score-box" id="hudScoreCard">
-      <div class="hud-label">SCORE</div>
-      <div class="score-val" id="hudScore">0</div>
+    <div class="pill-gold hud-Interactive" id="hudScoreCard">
+      <div style="text-align:left; line-height:1.05">
+        <div style="font-size:11px; font-weight:900; color:var(--gold)">SCORE</div>
+        <div style="font-size:26px; font-weight:900" id="hudScore">0</div>
+      </div>
     </div>
 
-    <div class="hud-card combo-box" id="hudComboCard">
-      <div class="hud-label combo-label" id="hudComboLabel">STARLIGHT COMBO</div>
-      <div class="combo-val" id="hudCombo">×1</div>
+    <div class="pill-purple hud-Interactive" id="hudComboCard" style="flex-direction:column; gap:1px; padding:8px 22px">
+      <div style="font-size:10px; font-weight:900; color:var(--lime)" id="hudComboLabel">STARLIGHT COMBO</div>
+      <div style="font-size:24px; font-weight:900; line-height:1.1" id="hudCombo">×1</div>
       <div class="warp-pips" id="warpPips">
         <div class="warp-pip"></div><div class="warp-pip"></div><div class="warp-pip"></div><div class="warp-pip"></div><div class="warp-pip"></div>
       </div>
     </div>
 
-    <div class="right-controls">
-      <div class="shard-pill" id="hudShardPill">
-        <div class="shard-diamond"></div>
-        <span id="hudShards">30</span>
+    <div style="display:flex; align-items:center; gap:10px" class="hud-Interactive">
+      <div class="pill-purple" id="hudShardPill">
+        <svg width="24" height="24" viewBox="0 0 64 64"><polygon fill="#ff5ee0" points="18,12 46,12 58,28 32,56 6,28"/></svg>
+        <span style="font-size:20px; font-weight:900" id="hudShards">85</span>
       </div>
-      <button class="icon-btn" id="btnHullsTop" title="Probe Hulls">▲</button>
-      <button class="icon-btn" id="btnMute" title="Toggle Audio">♪</button>
-      <button class="icon-btn" id="btnPause" title="Pause">||</button>
+      <button class="btn-circle-settings" id="btnPause" title="Pause" style="width:48px; height:48px; font-weight:900; font-size:18px; color:#fff">||</button>
     </div>
   </div>
 
   <div id="tierBanner">
-    <div id="tierTag">TIER 1 • NEBULA</div>
-    <div id="tierName">NEBULA</div>
-    <div id="tierTip">Static planets, open space. Release when the tangent points at the next planet!</div>
+    <div id="tierTag" style="font-size:11px; font-weight:900; color:var(--neon-cyan)">TIER 1 • COSMIC SECTOR</div>
+    <div id="tierName" style="font-size:24px; font-weight:900; color:var(--gold)">NEBULA</div>
+    <div id="tierTip" style="font-size:13px; font-weight:700">Release when the dotted line turns LIME!</div>
   </div>
 
   <div class="bottom-bar">
@@ -460,69 +529,92 @@
   </div>
 </div>
 
+<!-- ==================== 4. MODALS ==================== -->
+<!-- UPGRADES Modal -->
+<div class="modal-overlay" id="upgradesModal">
+  <div class="modal-card">
+    <div class="modal-title">SHIP UPGRADES</div>
+    <div class="modal-sub" id="upgShardsText">AVAILABLE SHARDS: ◆ 85</div>
+    <div id="upgradesList"></div>
+    <button class="btn-play-green" id="btnCloseUpgrades" style="margin-top:10px; font-size:20px; padding:12px 38px">DONE</button>
+  </div>
+</div>
+
+<!-- SKINS / HULLS Modal -->
+<div class="modal-overlay" id="hullsModal">
+  <div class="modal-card">
+    <div class="modal-title">ROCKET SKINS</div>
+    <div class="modal-sub" id="hullShardsText">AVAILABLE SHARDS: ◆ 85</div>
+    <div id="hullsList"></div>
+    <button class="btn-play-green" id="btnCloseHulls" style="margin-top:10px; font-size:20px; padding:12px 38px">DONE</button>
+  </div>
+</div>
+
+<!-- RANKS (Leaderboard) Modal -->
+<div class="modal-overlay" id="lbModal">
+  <div class="modal-card">
+    <div class="modal-title">COSMIC RANKS</div>
+    <div class="modal-sub">WEEKLY GLOBAL STANDINGS</div>
+    <div class="stats-table" id="lbList"></div>
+    <button class="btn-play-green" id="btnCloseLb" style="font-size:20px; padding:12px 38px">CLOSE</button>
+  </div>
+</div>
+
+<!-- MISSIONS / TIERS Modal -->
+<div class="modal-overlay" id="missionsModal">
+  <div class="modal-card">
+    <div class="modal-title">COSMIC MISSIONS</div>
+    <div class="modal-sub">SELECT STARTING SECTOR & MODE</div>
+    <div class="stats-table">
+      <div class="stat-row">
+        <span class="stat-lbl">SECTOR</span>
+        <button class="action-pill-btn" id="btnCycleTier">Tier 1: Nebula</button>
+      </div>
+      <div class="stat-row">
+        <span class="stat-lbl">MODE</span>
+        <button class="action-pill-btn" id="btnCycleSeed">Endless Arcade</button>
+      </div>
+    </div>
+    <button class="btn-play-green" id="btnCloseMissions" style="font-size:20px; padding:12px 38px">SELECT & CLOSE</button>
+  </div>
+</div>
+
+<!-- SETTINGS Modal -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal-card">
+    <div class="modal-title">SETTINGS</div>
+    <div class="modal-sub">AUDIO & VISUAL PREFERENCES</div>
+    <div class="stats-table">
+      <div class="stat-row">
+        <span class="stat-lbl">SOUND & MUSIC</span>
+        <button class="action-pill-btn" id="btnToggleAudio">ON</button>
+      </div>
+      <div class="stat-row">
+        <span class="stat-lbl">SCREEN SHAKE</span>
+        <button class="action-pill-btn" id="btnToggleShake">ON</button>
+      </div>
+    </div>
+    <button class="btn-play-green" id="btnCloseSettings" style="font-size:20px; padding:12px 38px">SAVE & CLOSE</button>
+  </div>
+</div>
+
 <!-- SIGNAL LOST (Game Over) Modal -->
 <div class="modal-overlay" id="gameOverModal">
   <div class="modal-card">
-    <div class="modal-title">SIGNAL LOST</div>
+    <div class="modal-title" style="color:#ff38cb">SIGNAL LOST</div>
     <div class="modal-sub" id="goReason">Probe destroyed by asteroid</div>
     <div class="stats-table">
       <div class="stat-row"><span class="stat-lbl">SCORE</span><span class="stat-val" id="goScore">0</span></div>
       <div class="stat-row"><span class="stat-lbl">BEST</span><span class="stat-val" style="color:var(--gold)" id="goBest">0</span></div>
       <div class="stat-row"><span class="stat-lbl">STAR SHARDS</span><span class="stat-val" style="color:var(--neon-cyan)" id="goShards">+0</span></div>
-      <div class="stat-row"><span class="stat-lbl">COSMIC TIER</span><span class="stat-val" style="color:var(--lime)" id="goTier">Tier 1 • Nebula</span></div>
+      <div class="stat-row"><span class="stat-lbl">SECTOR</span><span class="stat-val" style="color:var(--lime)" id="goTier">Tier 1 • Nebula</span></div>
     </div>
-    <button class="primary-btn" id="btnRetry">TAP TO RETRY</button>
+    <button class="btn-play-green" id="btnRetry" style="width:100%">TAP TO RETRY &nbsp; &#10095;</button>
     <div class="nav-links">
-      <button class="sec-btn" id="btnGoHome">Home / Tiers</button>
-      <button class="sec-btn" id="btnGoHulls">Hulls</button>
-      <button class="sec-btn" id="btnGoLb">Leaderboard</button>
+      <button class="action-pill-btn" id="btnGoMenu">MAIN MENU</button>
+      <button class="action-pill-btn" id="btnGoUpgrades">UPGRADES</button>
+      <button class="action-pill-btn" id="btnGoSkins">SKINS</button>
     </div>
-  </div>
-</div>
-
-<!-- HOME / TIER SELECT Modal -->
-<div class="modal-overlay" id="homeModal">
-  <div class="modal-card">
-    <div class="modal-title" style="font-size:30px">ORBIT LAUNCHER</div>
-    <div class="modal-sub" style="color:var(--neon-cyan)">TOP-DOWN ORBITAL HOPPER • V1.1</div>
-    <p style="font-size:13px; color:#b8d4f2; line-height:1.5; margin-bottom:16px">
-      Ride each planet's gravity orbit and tap when the dotted tangent line turns <b style="color:var(--lime)">LIME</b> to sling toward the next planet. Chain 5 Perfect Hops for a 3.5s <b style="color:var(--neon-cyan)">Warp Shield</b>!
-    </p>
-    <div class="stats-table">
-      <div class="stat-row">
-        <span class="stat-lbl">STARTING TIER</span>
-        <button class="sec-btn" id="btnCycleTier">Tier 1: Nebula</button>
-      </div>
-      <div class="stat-row">
-        <span class="stat-lbl">RUN MODE</span>
-        <button class="sec-btn" id="btnCycleSeed">Endless Cosmic Void</button>
-      </div>
-    </div>
-    <button class="primary-btn" id="btnStartRun">LAUNCH PROBE</button>
-    <div class="nav-links">
-      <button class="sec-btn" id="btnHomeHulls">Hulls Hangar</button>
-      <button class="sec-btn" id="btnHomeLb">Leaderboard</button>
-    </div>
-  </div>
-</div>
-
-<!-- HULLS HANGAR Modal -->
-<div class="modal-overlay" id="hullsModal">
-  <div class="modal-card">
-    <div class="modal-title" style="font-size:28px">PROBE HULL HANGAR</div>
-    <div class="modal-sub" style="color:var(--gold)" id="hullShardsText">AVAILABLE SHARDS: ◆ 30</div>
-    <div id="hullsList"></div>
-    <button class="primary-btn" id="btnCloseHulls" style="margin-top:10px">BACK TO FLIGHT</button>
-  </div>
-</div>
-
-<!-- LEADERBOARD Modal -->
-<div class="modal-overlay" id="lbModal">
-  <div class="modal-card">
-    <div class="modal-title" style="font-size:26px; color:var(--gold)">COSMIC LEADERBOARD</div>
-    <div class="modal-sub" style="color:var(--neon-cyan)">WEEKLY GLOBAL & SEED STANDINGS</div>
-    <div class="stats-table" id="lbList"></div>
-    <button class="primary-btn" id="btnCloseLb">BACK</button>
   </div>
 </div>
 
@@ -531,75 +623,86 @@
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
 
-  // --- Build Per-Letter Animated Title ("ORBIT LAUNCHER") ---
-  const titleContainer = document.getElementById('animatedTitle');
-  const titleText = 'ORBIT LAUNCHER';
-  titleText.split('').forEach((ch, idx) => {
-    const span = document.createElement('span');
-    if (ch === ' ') {
-      span.className = 'title-letter space';
-      span.innerHTML = '&nbsp;';
-    } else {
-      span.className = 'title-letter' + (idx < 5 ? ' orbit-word' : '');
-      span.textContent = ch;
-      span.style.setProperty('--pop-delay', `${idx * 0.055}s`);
-      span.style.setProperty('--wave-delay', `${0.65 + idx * 0.08}s`);
-    }
-    titleContainer.appendChild(span);
-  });
+  // --- Populate 3D Floating Letters for Splash & Main Menu ---
+  function buildLogoLetters(row1Id, row2Id) {
+    const r1 = document.getElementById(row1Id);
+    const r2 = document.getElementById(row2Id);
+    'ORBIT'.split('').forEach((ch, i) => {
+      const s = document.createElement('span');
+      s.className = 'logo-ch cyan';
+      s.textContent = ch;
+      s.style.setProperty('--d', `${i * 0.09}s`);
+      r1.appendChild(s);
+    });
+    'LAUNCHER'.split('').forEach((ch, i) => {
+      const s = document.createElement('span');
+      s.className = 'logo-ch pink';
+      s.textContent = ch;
+      s.style.setProperty('--d', `${(i + 5) * 0.09}s`);
+      r2.appendChild(s);
+    });
+  }
+  buildLogoLetters('splashRow1', 'splashRow2');
+  buildLogoLetters('mmRow1', 'mmRow2');
 
-  // --- GDD Data: 5 Cosmic Tiers & 4 Probe Hulls ---
+  // --- Game Data ---
   const TIERS = [
-    { num: 1, name: 'NEBULA', sub: 'Static planets, open space. Learn the timing.', tip: 'Release when the dotted tangent line turns LIME and points at the next planet!', color: '#00f0ff' },
-    { num: 2, name: 'ASTEROID RING', sub: 'Alternating CW / CCW orbits & drifting rocks.', tip: 'Read the arrows on each ring before capture. Flipped orbits reverse your launch side!', color: '#00ff88' },
-    { num: 3, name: 'BINARY STARS', sub: 'Decaying orbits and laser barriers. Move fast.', tip: 'Decaying planets shrink and collapse after 2 spins! Aim through the laser pulse gaps.', color: '#ffae2e' },
-    { num: 4, name: 'PULSAR STORM', sub: 'Oscillating gravity, spinning debris & mines.', tip: 'Strong pulses spin the probe faster. Feel the rhythm before tapping!', color: '#b855ff' },
-    { num: 5, name: 'SINGULARITY', sub: 'Moving planets, lensing & wandering black holes.', tip: 'Aim at where the planet WILL be! Missed shots near a Black Hole spiral in.', color: '#ff2a5f' }
+    { num: 1, name: 'NEBULA', tip: 'Release when the dotted tangent line turns LIME!', color: '#00f0ff' },
+    { num: 2, name: 'ASTEROID RING', tip: 'Read the CW / CCW arrows on each ring before capture!', color: '#3dff58' },
+    { num: 3, name: 'BINARY STARS', tip: 'Decaying planets shrink & collapse after 2 spins!', color: '#ffae2e' },
+    { num: 4, name: 'PULSAR STORM', tip: 'Strong pulses spin your rocket faster. Feel the rhythm!', color: '#b855ff' },
+    { num: 5, name: 'SINGULARITY', tip: 'Aim where moving planets WILL be! Avoid Black Holes!', color: '#ff2ec7' }
   ];
 
   const HULLS = [
-    { id: 0, name: 'SCOUT PROBE', desc: 'Lime / cyan triangle with luminous gradient trail.', cost: 0, c1: '#00ff88', c2: '#00f0ff' },
-    { id: 1, name: 'NEON GLIDER', desc: 'Delta wing with pink and cyan twin trail.', cost: 25, c1: '#ff47c7', c2: '#00f0ff' },
-    { id: 2, name: 'ION DART', desc: 'Slim dart with high-velocity blue & gold ion flame.', cost: 60, c1: '#ffd644', c2: '#26a6ff' },
-    { id: 3, name: 'PULSAR CORE', desc: 'Glowing orb with gold ring and purple pulse aura.', cost: 120, c1: '#b855ff', c2: '#ffd644' }
+    { id: 0, name: 'SCOUT ROCKET', desc: 'Cyan/Orange arcade rocket with luminous trail.', cost: 0, c1: '#00f0ff', c2: '#ff8c24' },
+    { id: 1, name: 'NEON GLIDER', desc: 'Delta wing with vibrant pink and cyan twin trail.', cost: 25, c1: '#ff2ec7', c2: '#00f0ff' },
+    { id: 2, name: 'ION DART', desc: 'Golden speed dart with electric blue ion flame.', cost: 60, c1: '#ffd644', c2: '#26a6ff' },
+    { id: 3, name: 'PULSAR CORE', desc: 'Glowing cosmic orb with golden rings & purple aura.', cost: 120, c1: '#b855ff', c2: '#ffd644' }
   ];
 
-  // --- Persistent State ---
-  let bestScore = parseInt(localStorage.getItem('OL_Best') || '0', 10);
-  let totalShards = parseInt(localStorage.getItem('OL_Shards') || '30', 10);
+  const UPGRADES = [
+    { id: 0, key: 'magnet', name: 'GRAVITY MAGNET', desc: 'Pulls nearby Star Shards & widens Perfect Hop aim.', baseCost: 15, color: '#ff9d2e' },
+    { id: 1, key: 'shield', name: 'WARP SHIELD CORE', desc: 'Extends Warp Invulnerability duration (+0.8s/lvl).', baseCost: 20, color: '#00f0ff' },
+    { id: 2, key: 'boost', name: 'ION THRUSTERS', desc: 'Boosts all Hop Score points (+20%/lvl) & flight range.', baseCost: 25, color: '#ff2ec7' }
+  ];
+
+  let bestScore = parseInt(localStorage.getItem('OL_Best') || '19450', 10);
+  let totalShards = parseInt(localStorage.getItem('OL_Shards') || '85', 10);
   let equippedHull = parseInt(localStorage.getItem('OL_Hull') || '0', 10);
   let unlockedHulls = JSON.parse(localStorage.getItem('OL_Unlocked') || '[0]');
+  let upgLevels = JSON.parse(localStorage.getItem('OL_UpgLevels') || '[1,1,1]');
   let startTier = 1;
   let dailySeedMode = false;
   let isMuted = false;
+  let shakeEnabled = true;
   let isPaused = false;
   let splashActive = true;
+  let inMainMenu = false;
 
-  // --- Moving Background Planets for Splash Screen ---
+  // --- Splash Moving Planets ---
   const splashPlanets = [
-    { baseX: -5.2, baseY: 3.1, x: -5.2, y: 3.1, r: 1.35, orbR: 2.35, color: '#00f0ff', dir: -1, vx: 0.7, vy: 0.45, phase: 0.2 },
-    { baseX: 5.4, baseY: 2.8, x: 5.4, y: 2.8, r: 1.15, orbR: 2.05, color: '#b855ff', dir: 1, vx: -0.65, vy: 0.5, phase: 1.4 },
-    { baseX: -5.6, baseY: -2.9, x: -5.6, y: -2.9, r: 1.05, orbR: 1.9, color: '#ffae2e', dir: -1, vx: 0.8, vy: -0.4, phase: 2.7 },
-    { baseX: 5.1, baseY: -3.1, x: 5.1, y: -3.1, r: 1.25, orbR: 2.2, color: '#00ff88', dir: 1, vx: -0.55, vy: -0.55, phase: 3.9 },
-    { baseX: 0.0, baseY: 3.5, x: 0.0, y: 3.5, r: 1.5, orbR: 2.6, color: '#ff2a5f', dir: -1, vx: 0.5, vy: 0.35, phase: 5.1 }
+    { baseX: -5.0, baseY: 3.0, x: -5.0, y: 3.0, r: 1.35, orbR: 2.35, color: '#ff2ec7', dir: -1, vx: 0.7, vy: 0.45, phase: 0.2 },
+    { baseX: 5.2, baseY: 2.8, x: 5.2, y: 2.8, r: 1.15, orbR: 2.05, color: '#00f0ff', dir: 1, vx: -0.65, vy: 0.5, phase: 1.4 },
+    { baseX: -5.4, baseY: -2.9, x: -5.4, y: -2.9, r: 1.05, orbR: 1.9, color: '#ffd644', dir: -1, vx: 0.8, vy: -0.4, phase: 2.7 },
+    { baseX: 5.0, baseY: -3.1, x: 5.0, y: -3.1, r: 1.25, orbR: 2.2, color: '#3dff58', dir: 1, vx: -0.55, vy: -0.55, phase: 3.9 }
   ];
 
-  // --- Run Splash Loading Sequence ---
   const splashStages = [
-    'INITIALIZING GRAVITY WELLS...',
-    'CALIBRATING ORBITAL TANGENTS...',
-    'LOADING FIVE COSMIC SECTORS...',
-    'SYNTHESIZING PENTATONIC RESONANCE...',
-    'SYSTEMS NOMINAL • LAUNCHING PROBE!'
+    'IGNITING COSMIC NEBULA...',
+    'CALIBRATING ORBITAL RINGS...',
+    'PREPARING ROCKET SKINS & UPGRADES...',
+    'TUNING PENTATONIC SYNTH CHIMES...',
+    'WELCOME TO ORBIT LAUNCHER!'
   ];
   let splashStartTime = performance.now();
-  const splashDuration = 3200;
+  const splashDuration = 2900;
 
   function updateSplashProgress(now) {
     if (!splashActive) return;
     const elapsed = now - splashStartTime;
     const rawT = Math.min(1, Math.max(0, elapsed / splashDuration));
-    const prog = rawT * rawT * (3 - 2 * rawT); // smoothstep
+    const prog = rawT * rawT * (3 - 2 * rawT);
 
     const pct = Math.round(prog * 100);
     document.getElementById('splashBarFill').style.width = pct + '%';
@@ -607,18 +710,16 @@
     const stIdx = Math.min(splashStages.length - 1, Math.floor(prog * splashStages.length));
     document.getElementById('splashStatus').textContent = splashStages[stIdx];
 
-    if (rawT >= 1 && ! splashScreen._closing) {
+    if (rawT >= 1 && !splashScreen._closing) {
       splashScreen._closing = true;
       setTimeout(() => {
         document.getElementById('splashScreen').classList.add('hide');
-        document.getElementById('hud').classList.add('hud-visible');
         splashActive = false;
-        startNewRun();
-      }, 320);
+        enterMainMenu();
+      }, 280);
     }
   }
 
-  // --- UI Pop Punch Helper ---
   function triggerCardPunch(elId) {
     const el = document.getElementById(elId);
     if (!el) return;
@@ -629,10 +730,9 @@
     el._punchTimer = setTimeout(() => el.classList.remove('pop-punch'), 220);
   }
 
-  // --- Web Audio API Synth (Pentatonic Glass-Synth + SFX) ---
+  // --- Web Audio API Synth ---
   let audioCtx = null;
   const PENTATONIC = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50, 1174.66, 1318.51];
-
   function ensureAudio() {
     if (!audioCtx) {
       const AC = window.AudioContext || window.webkitAudioContext;
@@ -640,35 +740,27 @@
     }
     if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
   }
-
   function playChime(streak) {
     if (isMuted) return;
     ensureAudio();
     if (!audioCtx) return;
     const now = audioCtx.currentTime;
     const freq = PENTATONIC[Math.min(streak, PENTATONIC.length - 1)];
-    const osc1 = audioCtx.createOscillator();
-    const osc2 = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc1.type = 'sine';
-    osc2.type = 'triangle';
-    osc1.frequency.setValueAtTime(freq, now);
-    osc2.frequency.setValueAtTime(freq * 2, now);
+    const osc1 = audioCtx.createOscillator(), osc2 = audioCtx.createOscillator(), gain = audioCtx.createGain();
+    osc1.type = 'sine'; osc2.type = 'triangle';
+    osc1.frequency.setValueAtTime(freq, now); osc2.frequency.setValueAtTime(freq * 2, now);
     gain.gain.setValueAtTime(0.001, now);
     gain.gain.linearRampToValueAtTime(0.22, now + 0.015);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.48);
     osc1.connect(gain); osc2.connect(gain); gain.connect(audioCtx.destination);
-    osc1.start(now); osc2.start(now);
-    osc1.stop(now + 0.5); osc2.stop(now + 0.5);
+    osc1.start(now); osc2.start(now); osc1.stop(now + 0.5); osc2.stop(now + 0.5);
   }
-
   function playReleaseSfx(mult) {
     if (isMuted) return;
     ensureAudio();
     if (!audioCtx) return;
     const now = audioCtx.currentTime;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
+    const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
     osc.type = 'sine';
     const base = 220 + mult * 30;
     osc.frequency.setValueAtTime(base, now);
@@ -678,14 +770,12 @@
     osc.connect(gain); gain.connect(audioCtx.destination);
     osc.start(now); osc.stop(now + 0.25);
   }
-
   function playShardSfx() {
     if (isMuted) return;
     ensureAudio();
     if (!audioCtx) return;
     const now = audioCtx.currentTime;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
+    const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
     osc.type = 'sine';
     osc.frequency.setValueAtTime(1046.5, now);
     osc.frequency.setValueAtTime(1567.98, now + 0.07);
@@ -694,14 +784,12 @@
     osc.connect(gain); gain.connect(audioCtx.destination);
     osc.start(now); osc.stop(now + 0.34);
   }
-
   function playDeathSfx() {
     if (isMuted) return;
     ensureAudio();
     if (!audioCtx) return;
     const now = audioCtx.currentTime;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
+    const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
     osc.type = 'sawtooth';
     osc.frequency.setValueAtTime(150, now);
     osc.frequency.exponentialRampToValueAtTime(32, now + 0.45);
@@ -711,7 +799,6 @@
     osc.start(now); osc.stop(now + 0.5);
   }
 
-  // --- Seeded RNG ---
   let rngState = 12345;
   function rand() {
     rngState = (rngState * 1664525 + 1013904223) >>> 0;
@@ -719,54 +806,29 @@
   }
   function randRange(a, b) { return a + (b - a) * rand(); }
 
-  // --- World & Physics State ---
   const PPU = 58;
-  let score = 0;
-  let displayedScore = 0;
-  let runShards = 0;
-  let perfectStreak = 0;
-  let comboMult = 1;
-  let currentTier = 1;
-  let gameTime = 0;
-
-  let planets = [];
-  let hazards = [];
-  let shards = [];
-  let particles = [];
-  let shockwaves = [];
-  let popups = [];
-  let stars = [];
-
+  let score = 0, displayedScore = 0, runShards = 0, perfectStreak = 0, comboMult = 1, currentTier = 1, gameTime = 0;
+  let planets = [], hazards = [], shards = [], particles = [], shockwaves = [], popups = [], stars = [];
   let cam = { x: 0, y: 0, zoom: 1, targetZoom: 1, shakeTimer: 0, shakeMag: 0 };
 
-  const STATE = { FREE: 0, LOCKING: 1, ORBIT: 2, DEAD: 4 };
+  const STATE = { PARKED: -1, FREE: 0, LOCKING: 1, ORBIT: 2, DEAD: 4 };
   let probe = {
-    x: -4, y: -1,
-    vx: 10, vy: 2,
-    state: STATE.FREE,
-    anchor: null,
-    lastAnchor: null,
-    angle: 0,
-    radius: 2.4,
-    omega: 2.5,
-    dir: -1,
-    spinsRadians: 0,
-    ignoreGravityTimer: 0,
-    freeTimer: 0,
-    warpTimer: 0,
-    heading: 0,
-    lastReleaseClean: true,
-    trail: []
+    x: -9, y: -3, vx: 0, vy: 0,
+    state: STATE.PARKED,
+    anchor: null, lastAnchor: null,
+    angle: 0, radius: 2.4, omega: 2.5, dir: -1,
+    spinsRadians: 0, ignoreGravityTimer: 0, freeTimer: 0, warpTimer: 0,
+    heading: 0, lastReleaseClean: true, trail: []
   };
 
-  for (let i = 0; i < 130; i++) {
+  for (let i = 0; i < 140; i++) {
     stars.push({
       x: (Math.random() - 0.5) * 40,
       y: (Math.random() - 0.5) * 40,
-      r: Math.random() * 1.9 + 0.6,
+      r: Math.random() * 2.0 + 0.6,
       p: 0.14 + Math.random() * 0.16,
-      c: Math.random() > 0.3 ? '#d8ecff' : '#00f0ff',
-      a: 0.25 + Math.random() * 0.65
+      c: i % 4 === 0 ? '#ff65e6' : (i % 3 === 0 ? '#00f0ff' : '#ffffff'),
+      a: 0.3 + Math.random() * 0.65
     });
   }
 
@@ -795,12 +857,10 @@
     const prev = { ...lastPlanetPos };
     lastPlanetPos = { x: px, y: py };
 
-    const pRadius = randRange(0.92, 1.15);
-    const oRadius = randRange(2.2, 2.55);
+    const pRadius = idx === 0 ? 1.32 : randRange(0.95, 1.18);
+    const oRadius = idx === 0 ? 2.45 : randRange(2.2, 2.55);
     let dir = -1;
-    if (tier >= 2 && idx > 0) {
-      dir = (idx % 2 === 1) ? 1 : -1;
-    }
+    if (tier >= 2 && idx > 0) dir = (idx % 2 === 1) ? 1 : -1;
     const decaying = (tier === 3 && idx > 0 && idx % 2 === 0) || (tier >= 4 && idx > 0 && rand() < 0.28);
     const pulsing = (tier === 4 && idx > 0) || (tier === 5 && rand() < 0.45);
     const moving = (tier === 5 && idx > 0 && idx % 2 === 1);
@@ -809,40 +869,22 @@
     const len = Math.hypot(dx, dy) || 1;
     const perpX = -dy / len, perpY = dx / len;
 
-    const hues = ['#00f0ff', '#b855ff', '#ff9d3b', '#00ff9d', '#ff3b7a'];
-    const pColor = decaying ? '#ff7733' : (pulsing ? '#b855ff' : (dir > 0 ? '#b855ff' : hues[(idx + tier) % hues.length]));
+    const hues = ['#ff2ec7', '#00f0ff', '#b855ff', '#ff9d3b', '#3dff58'];
+    const pColor = idx === 0 ? '#ff2ec7' : (decaying ? '#ff7733' : (pulsing ? '#b855ff' : hues[(idx + tier) % hues.length]));
 
     planets.push({
-      hopIndex: idx,
-      tier,
-      baseX: px, baseY: py,
-      x: px, y: py,
-      planetRadius: pRadius,
-      orbitRadius: oRadius,
-      captureRadius: oRadius * 1.42,
-      dir,
-      decaying,
-      pulsing,
-      moving,
-      perpX, perpY,
+      hopIndex: idx, tier,
+      baseX: px, baseY: py, x: px, y: py,
+      planetRadius: pRadius, orbitRadius: oRadius, captureRadius: oRadius * 1.42,
+      dir, decaying, pulsing, moving, perpX, perpY,
       moveAmp: moving ? randRange(1.1, 1.65) : 0,
-      phase: idx * 1.3,
-      pulseMult: 1,
-      accumRadians: 0,
-      collapsed: false,
-      visited: false,
-      color: pColor
+      phase: idx * 1.3, pulseMult: 1, accumRadians: 0,
+      collapsed: false, visited: false, color: pColor
     });
 
     if (idx > 0) {
-      const midX = (prev.x + px) * 0.5;
-      const midY = (prev.y + py) * 0.5;
-      shards.push({
-        x: midX + perpX * randRange(-0.3, 0.3),
-        y: midY + perpY * randRange(-0.3, 0.3),
-        phase: idx,
-        collected: false
-      });
+      const midX = (prev.x + px) * 0.5, midY = (prev.y + py) * 0.5;
+      shards.push({ x: midX + perpX * randRange(-0.3, 0.3), y: midY + perpY * randRange(-0.3, 0.3), phase: idx, collected: false });
 
       if (tier === 2) {
         const s = rand() > 0.5 ? 1.55 : -1.55;
@@ -860,34 +902,69 @@
     }
   }
 
-  function startNewRun() {
-    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
-    isPaused = false;
-    score = 0;
-    displayedScore = 0;
-    runShards = 0;
-    perfectStreak = 0;
-    comboMult = 1;
-    currentTier = startTier;
-
+  function generateWorld() {
     const now = new Date();
     rngState = dailySeedMode
       ? (now.getUTCFullYear() * 10000 + (now.getUTCMonth() + 1) * 100 + now.getUTCDate())
       : Math.floor(Math.random() * 9999999) + 1;
-
     planets = []; hazards = []; shards = []; particles = []; shockwaves = []; popups = [];
-    nextHopIndex = 0;
-    lastPlanetPos = { x: 0, y: 0 };
+    nextHopIndex = 0; lastPlanetPos = { x: 0, y: 0 };
     for (let i = 0; i < 8; i++) spawnNextPlanet();
+  }
+
+  // --- Enter Interactive Main Menu (First Planet sits in center viewport!) ---
+  function enterMainMenu() {
+    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+    document.getElementById('hud').classList.remove('hud-visible');
+    inMainMenu = true;
+    isPaused = false;
+    generateWorld();
+
+    // Park spaceship off-screen while First Planet is visible in center
+    probe.state = STATE.PARKED;
+    probe.x = -8; probe.y = -3;
+    probe.trail = [];
+    cam.x = 0; cam.y = -0.15;
+
+    document.getElementById('mmBestScore').textContent = bestScore.toLocaleString();
+    document.getElementById('mmShards').textContent = totalShards.toLocaleString();
+    const mm = document.getElementById('mainMenu');
+    mm.classList.remove('launching');
+    mm.classList.add('visible');
+  }
+
+  // --- Click "TAP TO PLAY >": Hide Main Menu -> Spaceship Flies into First Planet Orbit Circle! ---
+  function launchFromMainMenu() {
+    ensureAudio();
+    const mm = document.getElementById('mainMenu');
+    mm.classList.add('launching');
+    setTimeout(() => {
+      mm.classList.remove('visible', 'launching');
+      startNewRun(false);
+    }, 360);
+  }
+
+  function startNewRun(regen = true) {
+    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+    document.getElementById('hud').classList.add('hud-visible');
+    inMainMenu = false;
+    isPaused = false;
+    score = 0; displayedScore = 0; runShards = 0; perfectStreak = 0; comboMult = 1;
+    currentTier = startTier;
+    document.getElementById('hudScore').textContent = '0';
+
+    if (regen || planets.length === 0) generateWorld();
 
     const first = planets[0];
-    probe.x = first.x - 4.2;
-    probe.y = first.y - 1.15;
+    first.visited = false;
+    // Spaceship flies in from bottom-left and locks onto the First Planet's orbit circle!
+    probe.x = first.x - 4.3;
+    probe.y = first.y - 1.2;
     const dx = first.x - probe.x;
-    const dy = (first.y - 1.2) - probe.y;
+    const dy = (first.y - 1.15) - probe.y;
     const l = Math.hypot(dx, dy) || 1;
-    probe.vx = (dx / l) * 10.5;
-    probe.vy = (dy / l) * 10.5;
+    probe.vx = (dx / l) * 10.8;
+    probe.vy = (dy / l) * 10.8;
     probe.state = STATE.FREE;
     probe.anchor = null;
     probe.lastAnchor = null;
@@ -897,9 +974,8 @@
     probe.lastReleaseClean = true;
     probe.trail = [];
 
-    cam.x = first.x; cam.y = first.y;
     updateHUD();
-    if (!splashActive) showTierBanner(currentTier);
+    showTierBanner(currentTier);
   }
 
   function showTierBanner(tierNum) {
@@ -912,22 +988,14 @@
     el.style.borderColor = info.color;
     el.classList.add('show');
     clearTimeout(el._timer);
-    el._timer = setTimeout(() => el.classList.remove('show'), 3200);
+    el._timer = setTimeout(() => el.classList.remove('show'), 3000);
   }
 
   function spawnSparks(x, y, count, c1, c2, maxSpd = 7) {
     for (let i = 0; i < count; i++) {
       const a = Math.random() * Math.PI * 2;
       const s = 1.2 + Math.random() * maxSpd;
-      particles.push({
-        x, y,
-        vx: Math.cos(a) * s,
-        vy: Math.sin(a) * s,
-        life: 0,
-        maxLife: 0.25 + Math.random() * 0.45,
-        r: 2.5 + Math.random() * 4.5,
-        color: i % 2 === 0 ? c1 : c2
-      });
+      particles.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 0, maxLife: 0.25 + Math.random() * 0.45, r: 2.5 + Math.random() * 4.5, color: i % 2 === 0 ? c1 : c2 });
     }
   }
 
@@ -940,23 +1008,19 @@
     const dot = (tx * toX + ty * toY) / dist;
     if (dot <= 0.5) return { hit: false, idealX: tx, idealY: ty };
     const perpDist = Math.abs(toX * (-ty) + toY * tx);
-    return {
-      hit: perpDist <= nextP.captureRadius * 0.92,
-      idealX: toX / dist,
-      idealY: toY / dist
-    };
+    const magnetBonus = 1 + (upgLevels[0] - 1) * 0.06;
+    return { hit: perpDist <= nextP.captureRadius * 0.92 * magnetBonus, idealX: toX / dist, idealY: toY / dist };
   }
 
   function releaseProbe() {
-    if (splashActive) return;
+    if (splashActive || inMainMenu) return;
     if (probe.state !== STATE.LOCKING && probe.state !== STATE.ORBIT) return;
     const a = probe.anchor;
     if (!a) return;
 
     const rx = probe.x - a.x, ry = probe.y - a.y;
     const rLen = Math.hypot(rx, ry) || 1;
-    let tx = a.dir * (-ry / rLen);
-    let ty = a.dir * (rx / rLen);
+    let tx = a.dir * (-ry / rLen), ty = a.dir * (rx / rLen);
 
     const aim = checkTangentAim(probe.x, probe.y, tx, ty, a.hopIndex);
     const loopedTooMuch = probe.spinsRadians > Math.PI * 4.1;
@@ -970,10 +1034,8 @@
     }
 
     const speed = Math.min(16.5, Math.max(8.8, probe.omega * probe.radius * a.pulseMult * 1.5));
-    probe.vx = tx * speed;
-    probe.vy = ty * speed;
-    probe.lastAnchor = a;
-    probe.anchor = null;
+    probe.vx = tx * speed; probe.vy = ty * speed;
+    probe.lastAnchor = a; probe.anchor = null;
     probe.state = STATE.FREE;
     probe.ignoreGravityTimer = 0.15;
     probe.freeTimer = 0;
@@ -990,11 +1052,10 @@
     if (probe.state === STATE.DEAD) return;
     probe.state = STATE.DEAD;
     probe.vx = 0; probe.vy = 0;
-    cam.shakeTimer = 0.22;
-    cam.shakeMag = 0.45;
+    if (shakeEnabled) { cam.shakeTimer = 0.22; cam.shakeMag = 0.45; }
     const hull = HULLS[equippedHull] || HULLS[0];
-    spawnSparks(probe.x, probe.y, 65, hull.c1, '#ff2a5f', 8.5);
-    shockwaves.push({ x: probe.x, y: probe.y, r: 0.2, maxR: 3.6, color: '#ff2a5f', t: 0, dur: 0.48 });
+    spawnSparks(probe.x, probe.y, 65, hull.c1, '#ff2ec7', 8.5);
+    shockwaves.push({ x: probe.x, y: probe.y, r: 0.2, maxR: 3.6, color: '#ff2ec7', t: 0, dur: 0.48 });
     playDeathSfx();
 
     setTimeout(() => {
@@ -1024,6 +1085,8 @@
 
     while (nextHopIndex <= p.hopIndex + 6) spawnNextPlanet();
 
+    const boostMult = 1 + (upgLevels[2] - 1) * 0.2;
+
     if (!p.visited) {
       p.visited = true;
       if (p.tier > currentTier) {
@@ -1032,27 +1095,28 @@
       }
       if (p.hopIndex === 0) {
         playChime(0);
-        shockwaves.push({ x: p.x, y: p.y, r: p.orbitRadius * 0.4, maxR: p.orbitRadius * 1.15, color: '#00f0ff', t: 0, dur: 0.35 });
+        shockwaves.push({ x: p.x, y: p.y, r: p.orbitRadius * 0.4, maxR: p.orbitRadius * 1.18, color: '#00f0ff', t: 0, dur: 0.38 });
+        popups.push({ x: p.x, y: p.y + p.orbitRadius + 0.55, text: 'ORBIT LOCKED! TAP TO SLINGSHOT', color: '#00f0ff', t: 0, dur: 1.0 });
       } else if (probe.lastReleaseClean) {
         perfectStreak++;
         comboMult = perfectStreak === 1 ? 1 : (perfectStreak === 2 ? 2 : 4);
-        const pts = 100 * comboMult;
+        const pts = Math.round(100 * comboMult * boostMult);
         addScore(pts);
         triggerCardPunch('hudComboCard');
         playChime(perfectStreak);
-        shockwaves.push({ x: p.x, y: p.y, r: p.orbitRadius * 0.4, maxR: p.orbitRadius * 1.2, color: '#00ff88', t: 0, dur: 0.38 });
-        popups.push({ x: p.x, y: p.y + p.orbitRadius + 0.6, text: `PERFECT! +${pts}`, color: '#00ff88', t: 0, dur: 0.95 });
+        shockwaves.push({ x: p.x, y: p.y, r: p.orbitRadius * 0.4, maxR: p.orbitRadius * 1.2, color: '#3dff58', t: 0, dur: 0.38 });
+        popups.push({ x: p.x, y: p.y + p.orbitRadius + 0.6, text: `PERFECT! +${pts}`, color: '#3dff58', t: 0, dur: 0.95 });
 
         if (perfectStreak % 5 === 0) {
-          probe.warpTimer = 3.5;
+          probe.warpTimer = 3.5 + (upgLevels[1] - 1) * 0.8;
           popups.push({ x: probe.x, y: probe.y + 0.9, text: 'WARP SHIELD ACTIVE!', color: '#00f0ff', t: 0, dur: 1.1 });
         }
       } else {
-        perfectStreak = 0;
-        comboMult = 1;
-        addScore(100);
+        perfectStreak = 0; comboMult = 1;
+        const pts = Math.round(100 * boostMult);
+        addScore(pts);
         playChime(0);
-        popups.push({ x: p.x, y: p.y + p.orbitRadius + 0.5, text: 'CAPTURED +100', color: '#00f0ff', t: 0, dur: 0.85 });
+        popups.push({ x: p.x, y: p.y + p.orbitRadius + 0.5, text: `CAPTURED +${pts}`, color: '#00f0ff', t: 0, dur: 0.85 });
       }
       updateHUD();
     } else {
@@ -1072,9 +1136,9 @@
 
   function updateHUD() {
     document.getElementById('hudShards').textContent = totalShards.toString();
+    document.getElementById('mmShards').textContent = totalShards.toLocaleString();
+    document.getElementById('mmBestScore').textContent = bestScore.toLocaleString();
     document.getElementById('hudCombo').textContent = '×' + comboMult;
-    const card = document.getElementById('hudComboCard');
-    card.classList.toggle('active-combo', comboMult >= 2);
     document.getElementById('hudComboLabel').textContent = probe.warpTimer > 0 ? 'WARP INVULNERABILITY!' : 'STARLIGHT COMBO';
 
     const pips = document.querySelectorAll('#warpPips .warp-pip');
@@ -1084,13 +1148,11 @@
     });
   }
 
-  // --- Update Loop ---
   let lastTime = performance.now();
   function update(dt, now) {
     if (isPaused) return;
     gameTime += dt;
 
-    // Smoothly roll score number in HUD
     if (displayedScore !== score) {
       const step = Math.max(400, Math.abs(score - displayedScore) * 10) * dt;
       if (Math.abs(score - displayedScore) <= step) displayedScore = score;
@@ -1104,6 +1166,12 @@
         sp.x = sp.baseX + Math.sin(gameTime * 0.85 + sp.phase) * 1.45 + Math.cos(gameTime * 0.4 + sp.phase) * sp.vx;
         sp.y = sp.baseY + Math.cos(gameTime * 0.75 + sp.phase) * 1.15 + Math.sin(gameTime * 0.45 + sp.phase) * sp.vy;
       }
+      return;
+    }
+
+    if (inMainMenu) {
+      cam.x += (0 - cam.x) * 5 * dt;
+      cam.y += (-0.15 - cam.y) * 5 * dt;
       return;
     }
 
@@ -1139,7 +1207,7 @@
       }
     }
 
-    if (probe.state !== STATE.DEAD) {
+    if (probe.state !== STATE.DEAD && probe.state !== STATE.PARKED) {
       if (probe.ignoreGravityTimer > 0) probe.ignoreGravityTimer -= dt;
       if (probe.warpTimer > 0) {
         probe.warpTimer -= dt;
@@ -1154,7 +1222,8 @@
         probe.heading = Math.atan2(probe.vy, probe.vx);
         probe.freeTimer += dt;
 
-        if (probe.freeTimer >= 4.0) {
+        const maxTimeout = 4.0 + (upgLevels[2] - 1) * 0.55;
+        if (probe.freeTimer >= maxTimeout) {
           die('Probe drifted into deep space');
         }
 
@@ -1193,23 +1262,24 @@
 
           if (a.decaying && a.accumRadians >= Math.PI * 4) {
             a.collapsed = true;
-            spawnSparks(a.x, a.y, 45, '#ff2a5f', '#ffd644', 7);
+            spawnSparks(a.x, a.y, 45, '#ff2ec7', '#ffd644', 7);
             die('Crushed by collapsing binary star');
           }
         }
       }
 
       probe.trail.push({ x: probe.x, y: probe.y, t: gameTime });
-      while (probe.trail.length > 0 && gameTime - probe.trail[0].t > 0.26) {
+      while (probe.trail.length > 0 && gameTime - probe.trail[0].t > 0.28) {
         probe.trail.shift();
       }
 
+      const magnetRange = 1.75 + (upgLevels[0] - 1) * 0.7;
       for (const s of shards) {
         if (s.collected) continue;
         const d = Math.hypot(probe.x - s.x, probe.y - s.y);
-        if (d < 1.8) {
-          s.x += (probe.x - s.x) * 8 * dt;
-          s.y += (probe.y - s.y) * 8 * dt;
+        if (d < magnetRange) {
+          s.x += (probe.x - s.x) * 9 * dt;
+          s.y += (probe.y - s.y) * 9 * dt;
         }
         if (d < 0.65) {
           s.collected = true;
@@ -1238,7 +1308,7 @@
           if (probe.warpTimer > 0 && h.type !== 'blackhole') {
             h.dead = true;
             addScore(250);
-            spawnSparks(h.x, h.y, 25, '#ff2a5f', '#00f0ff', 5.5);
+            spawnSparks(h.x, h.y, 25, '#ff2ec7', '#00f0ff', 5.5);
             popups.push({ x: h.x, y: h.y, text: 'WARP SMASH! +250', color: '#00f0ff', t: 0, dur: 0.85 });
             playShardSfx();
           } else {
@@ -1270,8 +1340,7 @@
 
     for (let i = particles.length - 1; i >= 0; i--) {
       const pt = particles[i];
-      pt.life += dt;
-      pt.x += pt.vx * dt; pt.y += pt.vy * dt;
+      pt.life += dt; pt.x += pt.vx * dt; pt.y += pt.vy * dt;
       pt.vx *= 0.96; pt.vy *= 0.96;
       if (pt.life >= pt.maxLife) particles.splice(i, 1);
     }
@@ -1280,20 +1349,49 @@
       if (shockwaves[i].t >= shockwaves[i].dur) shockwaves.splice(i, 1);
     }
     for (let i = popups.length - 1; i >= 0; i--) {
-      popups[i].t += dt;
-      popups[i].y += 1.2 * dt;
+      popups[i].t += dt; popups[i].y += 1.2 * dt;
       if (popups[i].t >= popups[i].dur) popups.splice(i, 1);
     }
   }
 
-  // --- Render Loop ---
+  function drawSwirlPlanet(sx, sy, bodyR, mainColor, isStarter) {
+    // Outer cyan/magenta atmospheric glow
+    const halo = ctx.createRadialGradient(sx, sy, bodyR * 0.7, sx, sy, bodyR * 1.45);
+    halo.addColorStop(0, hexAlpha('#00f0ff', 0.45));
+    halo.addColorStop(0.6, hexAlpha(mainColor, 0.22));
+    halo.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = halo;
+    ctx.beginPath(); ctx.arc(sx, sy, bodyR * 1.45, 0, Math.PI * 2); ctx.fill();
+
+    // Planet sphere gradient matching Option 3 vibrant swirl planet
+    const pGrad = ctx.createRadialGradient(sx - bodyR * 0.32, sy - bodyR * 0.32, bodyR * 0.08, sx, sy, bodyR);
+    if (isStarter) {
+      pGrad.addColorStop(0, '#ff94ec');
+      pGrad.addColorStop(0.38, '#ff24b6');
+      pGrad.addColorStop(0.75, '#19388a');
+      pGrad.addColorStop(1, '#00f0ff');
+    } else {
+      pGrad.addColorStop(0, '#ffffff');
+      pGrad.addColorStop(0.3, mainColor);
+      pGrad.addColorStop(1, '#12082e');
+    }
+    ctx.fillStyle = pGrad;
+    ctx.beginPath(); ctx.arc(sx, sy, bodyR, 0, Math.PI * 2); ctx.fill();
+  }
+
   function render() {
     if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     }
     const W = canvas.width, H = canvas.height;
-    ctx.fillStyle = '#050813';
+
+    // Deep Cosmic Violet-Indigo Background
+    const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+    bgGrad.addColorStop(0, '#100529');
+    bgGrad.addColorStop(0.5, '#1a0a3d');
+    bgGrad.addColorStop(1, '#0c0420');
+    ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, W, H);
 
     const scale = PPU * cam.zoom * Math.min(1.15, Math.max(0.72, Math.min(W, H) / 850));
@@ -1306,10 +1404,10 @@
     const toScreenX = (wx) => W * 0.5 + (wx - cam.x) * scale + shakeX;
     const toScreenY = (wy) => H * 0.5 - (wy - cam.y) * scale + shakeY;
 
-    // 1. Parallax Starfield
+    // 1. Parallax Starfield & Soft Nebula Glows
     for (const s of stars) {
-      const sx = ((s.x - (cam.x + gameTime * 0.6) * s.p) % 36 + 36) % 36 - 18;
-      const sy = ((s.y + (cam.y + gameTime * 0.3) * s.p) % 36 + 36) % 36 - 18;
+      const sx = ((s.x - (cam.x + gameTime * 0.5) * s.p) % 36 + 36) % 36 - 18;
+      const sy = ((s.y + (cam.y + gameTime * 0.25) * s.p) % 36 + 36) % 36 - 18;
       ctx.globalAlpha = s.a;
       ctx.fillStyle = s.c;
       ctx.beginPath();
@@ -1318,99 +1416,58 @@
     }
     ctx.globalAlpha = 1;
 
-    // If Splash Screen is active, render Moving Background Planets & Orbiting Demo Probe!
+    // If Splash Screen is active, render Moving Background Planets
     if (splashActive) {
       for (const sp of splashPlanets) {
         const sx = W * 0.5 + sp.x * scale;
         const sy = H * 0.5 - sp.y * scale;
-        const capR = sp.orbR * 1.4 * scale;
         const orbR = sp.orbR * scale;
         const bodyR = sp.r * scale;
-
-        const grad = ctx.createRadialGradient(sx, sy, orbR * 0.2, sx, sy, capR);
-        grad.addColorStop(0, hexAlpha(sp.color, 0.26));
-        grad.addColorStop(0.85, hexAlpha(sp.color, 0.14));
-        grad.addColorStop(1, hexAlpha(sp.color, 0));
-        ctx.fillStyle = grad;
-        ctx.beginPath(); ctx.arc(sx, sy, capR, 0, Math.PI * 2); ctx.fill();
 
         ctx.save();
         ctx.translate(sx, sy);
         ctx.rotate(-gameTime * 0.55 * sp.dir);
         ctx.strokeStyle = hexAlpha(sp.color, 0.8);
-        ctx.lineWidth = 2.4;
-        ctx.setLineDash([9, 7]);
+        ctx.lineWidth = 2.6;
+        ctx.setLineDash([8, 7]);
         ctx.beginPath(); ctx.arc(0, 0, orbR, 0, Math.PI * 2); ctx.stroke();
         ctx.restore();
 
-        const pGrad = ctx.createRadialGradient(sx - bodyR * 0.35, sy - bodyR * 0.35, bodyR * 0.1, sx, sy, bodyR);
-        pGrad.addColorStop(0, '#ffffff');
-        pGrad.addColorStop(0.28, sp.color);
-        pGrad.addColorStop(1, '#081026');
-        ctx.fillStyle = pGrad;
-        ctx.beginPath(); ctx.arc(sx, sy, bodyR, 0, Math.PI * 2); ctx.fill();
-
-        // Orbiting scout probe around each moving splash planet
-        const pAng = gameTime * 2.2 * sp.dir + sp.phase;
-        const prX = sx + Math.cos(pAng) * orbR;
-        const prY = sy + Math.sin(pAng) * orbR;
-        ctx.save();
-        ctx.translate(prX, prY);
-        ctx.rotate(pAng + (sp.dir > 0 ? Math.PI * 0.5 : -Math.PI * 0.5));
-        ctx.fillStyle = '#00ff88';
-        ctx.shadowColor = '#00ff88'; ctx.shadowBlur = 12;
-        ctx.beginPath();
-        ctx.moveTo(11, 0); ctx.lineTo(-8, -6); ctx.lineTo(-5, 0); ctx.lineTo(-8, 6);
-        ctx.closePath(); ctx.fill();
-        ctx.restore();
+        drawSwirlPlanet(sx, sy, bodyR, sp.color, true);
       }
       return;
     }
 
-    // 2. Gameplay Planets & Gravity Zones
+    // 2. Gameplay / Main Menu Planets & Dotted Orbit Rings
     for (const p of planets) {
       if (p.collapsed) continue;
+      if (inMainMenu && p.hopIndex > 0) continue; // On Main Menu, showcase the First Planet cleanly in the center!
+
       const sx = toScreenX(p.x), sy = toScreenY(p.y);
       const capR = p.captureRadius * scale * (p.pulsing ? (0.94 + (p.pulseMult - 0.78) * 0.2) : 1);
       const orbR = p.orbitRadius * scale;
       const bodyR = p.planetRadius * scale * (p.decaying ? Math.max(0.35, 1 - aRatio(p)) : 1);
 
       const grad = ctx.createRadialGradient(sx, sy, orbR * 0.2, sx, sy, capR);
-      grad.addColorStop(0, hexAlpha(p.color, 0.22));
-      grad.addColorStop(0.85, hexAlpha(p.color, 0.14));
-      grad.addColorStop(1, hexAlpha(p.color, 0));
+      grad.addColorStop(0, hexAlpha(p.color, 0.24));
+      grad.addColorStop(0.85, hexAlpha('#00f0ff', 0.14));
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = grad;
       ctx.beginPath(); ctx.arc(sx, sy, capR, 0, Math.PI * 2); ctx.fill();
 
       ctx.save();
       ctx.translate(sx, sy);
       ctx.rotate(-gameTime * 0.35 * p.dir * p.pulseMult);
-      ctx.strokeStyle = hexAlpha(p.color, 0.85);
-      ctx.lineWidth = 2.4;
-      ctx.setLineDash([9, 7]);
+      ctx.strokeStyle = '#70f8ff';
+      ctx.lineWidth = 3.0;
+      ctx.setLineDash([7, 8]);
       ctx.beginPath(); ctx.arc(0, 0, orbR, 0, Math.PI * 2); ctx.stroke();
-      ctx.setLineDash([]);
       ctx.restore();
 
-      const pGrad = ctx.createRadialGradient(sx - bodyR * 0.35, sy - bodyR * 0.35, bodyR * 0.1, sx, sy, bodyR);
-      pGrad.addColorStop(0, '#ffffff');
-      pGrad.addColorStop(0.25, p.color);
-      pGrad.addColorStop(1, '#081026');
-      ctx.fillStyle = pGrad;
-      ctx.beginPath(); ctx.arc(sx, sy, bodyR, 0, Math.PI * 2); ctx.fill();
-
-      let badge = '';
-      if (p.decaying) badge = 'DECAYING ORBIT';
-      else if (p.pulsing) badge = 'PULSAR';
-      else if (p.moving) badge = 'MOVING PLANET';
-      else if (p.tier >= 2) badge = p.dir > 0 ? 'COUNTER-CLOCKWISE' : 'CLOCKWISE';
-      if (badge) {
-        ctx.font = 'bold 11px Segoe UI, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillStyle = p.color;
-        ctx.fillText(badge, sx, sy + orbR + 18);
-      }
+      drawSwirlPlanet(sx, sy, bodyR, p.color, p.hopIndex === 0);
     }
+
+    if (inMainMenu) return;
 
     // 3. Star Shards
     for (const s of shards) {
@@ -1419,8 +1476,8 @@
       ctx.save();
       ctx.translate(sx, sy);
       ctx.rotate(gameTime * 1.5 + s.phase);
-      ctx.fillStyle = '#ffd644';
-      ctx.shadowColor = '#ffd644'; ctx.shadowBlur = 12;
+      ctx.fillStyle = '#ff5ee0';
+      ctx.shadowColor = '#ff5ee0'; ctx.shadowBlur = 12;
       ctx.beginPath();
       ctx.moveTo(0, -10); ctx.lineTo(8, 0); ctx.lineTo(0, 10); ctx.lineTo(-8, 0);
       ctx.closePath(); ctx.fill();
@@ -1476,21 +1533,21 @@
       const px = toScreenX(probe.x), py = toScreenY(probe.y);
       const ex = toScreenX(probe.x + tx * 6.2), ey = toScreenY(probe.y + ty * 6.2);
       ctx.save();
-      ctx.strokeStyle = aim.hit ? '#00ff88' : 'rgba(190, 235, 255, 0.45)';
-      ctx.lineWidth = aim.hit ? 3.2 : 2.2;
+      ctx.strokeStyle = aim.hit ? '#3dff58' : 'rgba(190, 235, 255, 0.45)';
+      ctx.lineWidth = aim.hit ? 3.4 : 2.2;
       ctx.setLineDash([6, 7]);
       ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(ex, ey); ctx.stroke();
       ctx.restore();
     }
 
-    // 6. Probe Trail & Hull
+    // 6. Probe Trail & Arcade Rocket Hull
     const hull = HULLS[equippedHull] || HULLS[0];
     if (probe.trail.length > 1) {
       for (let i = 1; i < probe.trail.length; i++) {
         const t0 = probe.trail[i - 1], t1 = probe.trail[i];
         const ratio = i / probe.trail.length;
-        ctx.strokeStyle = hexAlpha(hull.c1, ratio * 0.85);
-        ctx.lineWidth = ratio * 8;
+        ctx.strokeStyle = hexAlpha(hull.c2, ratio * 0.9);
+        ctx.lineWidth = ratio * 9;
         ctx.beginPath();
         ctx.moveTo(toScreenX(t0.x), toScreenY(t0.y));
         ctx.lineTo(toScreenX(t1.x), toScreenY(t1.y));
@@ -1498,23 +1555,27 @@
       }
     }
 
-    if (probe.state !== STATE.DEAD) {
+    if (probe.state !== STATE.DEAD && probe.state !== STATE.PARKED) {
       const px = toScreenX(probe.x), py = toScreenY(probe.y);
       ctx.save();
       ctx.translate(px, py);
       ctx.rotate(-probe.heading);
-      ctx.fillStyle = hull.c1;
+      // Colorful Arcade Rocket Ship matching Option 3!
+      ctx.fillStyle = hull.c2;
       ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 1.8;
+      ctx.lineWidth = 2;
       ctx.shadowColor = hull.c1; ctx.shadowBlur = 14;
       ctx.beginPath();
-      ctx.moveTo(13, 0); ctx.lineTo(-10, -8); ctx.lineTo(-6, 0); ctx.lineTo(-10, 8);
+      ctx.moveTo(15, 0); ctx.lineTo(-10, -9); ctx.lineTo(-6, 0); ctx.lineTo(-10, 9);
       ctx.closePath(); ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = '#00f0ff';
+      ctx.beginPath(); ctx.arc(2, 0, 3.5, 0, Math.PI * 2); ctx.fill();
 
       if (probe.warpTimer > 0) {
         ctx.strokeStyle = '#00f0ff';
-        ctx.lineWidth = 2.5;
-        ctx.beginPath(); ctx.arc(0, 0, 19, 0, Math.PI * 2); ctx.stroke();
+        ctx.lineWidth = 2.8;
+        ctx.beginPath(); ctx.arc(0, 0, 20, 0, Math.PI * 2); ctx.stroke();
       }
       ctx.restore();
     }
@@ -1524,7 +1585,7 @@
       const prog = sw.t / sw.dur;
       const r = (sw.r + (sw.maxR - sw.r) * prog) * scale;
       ctx.strokeStyle = hexAlpha(sw.color, 1 - prog);
-      ctx.lineWidth = 3 * (1 - prog);
+      ctx.lineWidth = 3.2 * (1 - prog);
       ctx.beginPath(); ctx.arc(toScreenX(sw.x), toScreenY(sw.y), r, 0, Math.PI * 2); ctx.stroke();
     }
     for (const pt of particles) {
@@ -1534,7 +1595,7 @@
     }
     for (const pop of popups) {
       const alpha = Math.min(1, (1 - pop.t / pop.dur) * 1.5);
-      ctx.font = '900 14px Segoe UI, sans-serif';
+      ctx.font = '900 15px Segoe UI, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillStyle = hexAlpha(pop.color, alpha);
       ctx.fillText(pop.text, toScreenX(pop.x), toScreenY(pop.y));
@@ -1552,8 +1613,10 @@
   window.addEventListener('keydown', (e) => {
     if (e.code === 'Space' || e.code === 'Enter') {
       e.preventDefault();
-      if (document.getElementById('gameOverModal').classList.contains('active')) {
-        startNewRun();
+      if (inMainMenu) {
+        launchFromMainMenu();
+      } else if (document.getElementById('gameOverModal').classList.contains('active')) {
+        startNewRun(true);
       } else {
         releaseProbe();
       }
@@ -1561,45 +1624,70 @@
   });
   canvas.addEventListener('pointerdown', (e) => {
     e.preventDefault();
-    releaseProbe();
+    if (!inMainMenu) releaseProbe();
   });
 
-  // UI Buttons
-  document.getElementById('btnRetry').onclick = () => startNewRun();
-  document.getElementById('btnStartRun').onclick = () => startNewRun();
+  // --- Main Menu & Modal Button Wiring ---
+  document.getElementById('btnTapToPlay').onclick = () => launchFromMainMenu();
+  document.getElementById('btnRetry').onclick = () => startNewRun(true);
+  document.getElementById('btnGoMenu').onclick = () => enterMainMenu();
   document.getElementById('btnPause').onclick = () => { isPaused = !isPaused; };
-  document.getElementById('btnMute').onclick = () => {
-    isMuted = !isMuted;
-    document.getElementById('btnMute').style.opacity = isMuted ? '0.45' : '1';
-  };
-  document.getElementById('btnGoHome').onclick = () => {
-    document.getElementById('gameOverModal').classList.remove('active');
-    document.getElementById('homeModal').classList.add('active');
-  };
-  document.getElementById('btnCycleTier').onclick = () => {
-    startTier = (startTier % 5) + 1;
-    const t = TIERS[startTier - 1];
-    document.getElementById('btnCycleTier').textContent = `Tier ${t.num}: ${t.name}`;
-  };
-  document.getElementById('btnCycleSeed').onclick = () => {
-    dailySeedMode = !dailySeedMode;
-    document.getElementById('btnCycleSeed').textContent = dailySeedMode ? 'Daily Seed Challenge' : 'Endless Cosmic Void';
-  };
 
+  // UPGRADES Modal
+  function openUpgradesModal() {
+    document.getElementById('upgShardsText').textContent = `AVAILABLE SHARDS: ◆ ${totalShards}`;
+    const list = document.getElementById('upgradesList');
+    list.innerHTML = '';
+    UPGRADES.forEach((u, idx) => {
+      const lvl = upgLevels[idx] || 1;
+      const cost = u.baseCost * lvl;
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      let pipsHtml = '<div class="lvl-pips">';
+      for (let p = 0; p < 5; p++) pipsHtml += `<div class="lvl-pip ${p < lvl ? 'on' : ''}"></div>`;
+      pipsHtml += '</div>';
+      row.innerHTML = `<div class="item-info"><h4 style="color:${u.color}">${u.name} (Lv.${lvl})</h4><p>${u.desc}</p>${pipsHtml}</div>`;
+      const btn = document.createElement('button');
+      btn.className = 'action-pill-btn';
+      btn.textContent = lvl >= 5 ? 'MAXED' : `◆ ${cost}`;
+      btn.onclick = () => {
+        if (lvl < 5 && totalShards >= cost) {
+          totalShards -= cost;
+          upgLevels[idx] = lvl + 1;
+          localStorage.setItem('OL_Shards', String(totalShards));
+          localStorage.setItem('OL_UpgLevels', JSON.stringify(upgLevels));
+          playShardSfx();
+          updateHUD();
+          openUpgradesModal();
+        }
+      };
+      row.appendChild(btn);
+      list.appendChild(row);
+    });
+    document.getElementById('upgradesModal').classList.add('active');
+  }
+  document.getElementById('dockUpgrades').onclick = openUpgradesModal;
+  document.getElementById('btnPlusShards').onclick = openUpgradesModal;
+  document.getElementById('btnGoUpgrades').onclick = () => {
+    document.getElementById('gameOverModal').classList.remove('active');
+    openUpgradesModal();
+  };
+  document.getElementById('btnCloseUpgrades').onclick = () => document.getElementById('upgradesModal').classList.remove('active');
+
+  // SKINS Modal
   function openHullsModal() {
-    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
     document.getElementById('hullShardsText').textContent = `AVAILABLE SHARDS: ◆ ${totalShards}`;
     const list = document.getElementById('hullsList');
     list.innerHTML = '';
     HULLS.forEach(h => {
       const unlocked = unlockedHulls.includes(h.id);
       const eq = equippedHull === h.id;
-      const div = document.createElement('div');
-      div.className = 'hull-item';
-      div.innerHTML = `<div class="hull-info"><h4 style="color:${h.c1}">${h.name}</h4><p>${h.desc}</p></div>`;
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      row.innerHTML = `<div class="item-info"><h4 style="color:${h.c1}">${h.name}</h4><p>${h.desc}</p></div>`;
       const btn = document.createElement('button');
-      btn.className = 'hull-btn';
-      btn.textContent = eq ? 'EQUIPPED' : (unlocked ? 'EQUIP' : `UNLOCK ◆${h.cost}`);
+      btn.className = 'action-pill-btn';
+      btn.textContent = eq ? 'EQUIPPED' : (unlocked ? 'EQUIP' : `◆ ${h.cost}`);
       btn.onclick = () => {
         if (unlocked) {
           equippedHull = h.id;
@@ -1617,40 +1705,58 @@
           openHullsModal();
         }
       };
-      div.appendChild(btn);
-      list.appendChild(div);
+      row.appendChild(btn);
+      list.appendChild(row);
     });
     document.getElementById('hullsModal').classList.add('active');
   }
-  document.getElementById('btnHullsTop').onclick = openHullsModal;
-  document.getElementById('btnGoHulls').onclick = openHullsModal;
-  document.getElementById('btnHomeHulls').onclick = openHullsModal;
-  document.getElementById('btnCloseHulls').onclick = () => {
-    document.getElementById('hullsModal').classList.remove('active');
-    if (probe.state === STATE.DEAD) startNewRun();
+  document.getElementById('dockSkins').onclick = openHullsModal;
+  document.getElementById('btnGoSkins').onclick = () => {
+    document.getElementById('gameOverModal').classList.remove('active');
+    openHullsModal();
   };
+  document.getElementById('btnCloseHulls').onclick = () => document.getElementById('hullsModal').classList.remove('active');
 
-  function openLbModal() {
-    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+  // RANKS Modal
+  document.getElementById('dockRanks').onclick = () => {
     const entries = [
-      { name: 'NOVA-9', score: 18920, tier: 5 },
+      { name: 'NOVA-9', score: 19450, tier: 5 },
       { name: 'VORTEX', score: 14200, tier: 4 },
       { name: 'LYRA-X', score: 9800, tier: 3 },
-      { name: 'YOU (PILOT)', score: Math.max(bestScore, score), tier: currentTier },
+      { name: 'KASHAN (YOU)', score: Math.max(bestScore, score), tier: currentTier },
       { name: 'ORION-7', score: 3200, tier: 2 }
     ].sort((a, b) => b.score - a.score);
-    const lb = document.getElementById('lbList');
-    lb.innerHTML = entries.map((e, i) =>
-      `<div class="stat-row"><span class="stat-lbl">#${i + 1} ${e.name} (Tier ${e.tier})</span><span class="stat-val">${e.score.toLocaleString()}</span></div>`
+    document.getElementById('lbList').innerHTML = entries.map((e, i) =>
+      `<div class="stat-row"><span class="stat-lbl">#${i + 1} ${e.name} (Tier ${e.tier})</span><span class="stat-val" style="color:var(--gold)">${e.score.toLocaleString()}</span></div>`
     ).join('');
     document.getElementById('lbModal').classList.add('active');
-  }
-  document.getElementById('btnGoLb').onclick = openLbModal;
-  document.getElementById('btnHomeLb').onclick = openLbModal;
-  document.getElementById('btnCloseLb').onclick = () => {
-    document.getElementById('lbModal').classList.remove('active');
-    if (probe.state === STATE.DEAD) document.getElementById('gameOverModal').classList.add('active');
   };
+  document.getElementById('btnCloseLb').onclick = () => document.getElementById('lbModal').classList.remove('active');
+
+  // MISSIONS Modal
+  document.getElementById('dockMissions').onclick = () => document.getElementById('missionsModal').classList.add('active');
+  document.getElementById('btnCycleTier').onclick = () => {
+    startTier = (startTier % 5) + 1;
+    const t = TIERS[startTier - 1];
+    document.getElementById('btnCycleTier').textContent = `Tier ${t.num}: ${t.name}`;
+  };
+  document.getElementById('btnCycleSeed').onclick = () => {
+    dailySeedMode = !dailySeedMode;
+    document.getElementById('btnCycleSeed').textContent = dailySeedMode ? 'Daily Seed' : 'Endless Arcade';
+  };
+  document.getElementById('btnCloseMissions').onclick = () => document.getElementById('missionsModal').classList.remove('active');
+
+  // SETTINGS Modal
+  document.getElementById('btnOpenSettings').onclick = () => document.getElementById('settingsModal').classList.add('active');
+  document.getElementById('btnToggleAudio').onclick = () => {
+    isMuted = !isMuted;
+    document.getElementById('btnToggleAudio').textContent = isMuted ? 'OFF' : 'ON';
+  };
+  document.getElementById('btnToggleShake').onclick = () => {
+    shakeEnabled = !shakeEnabled;
+    document.getElementById('btnToggleShake').textContent = shakeEnabled ? 'ON' : 'OFF';
+  };
+  document.getElementById('btnCloseSettings').onclick = () => document.getElementById('settingsModal').classList.remove('active');
 
   function loop(now) {
     const dt = Math.min(0.05, (now - lastTime) / 1000);

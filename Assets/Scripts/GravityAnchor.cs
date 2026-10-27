@@ -43,7 +43,7 @@ namespace OrbitLauncher
 
         private static readonly string[] PlanetSprites =
         {
-            "planet_cyan", "planet_purple", "planet_amber", "planet_emerald", "planet_crimson"
+            "planet_arcade", "planet_cyan", "planet_purple", "planet_amber", "planet_emerald", "planet_crimson"
         };
 
         public void Initialize(int index, int tier, Vector2 pos, float pRadius, float oRadius, int dir,

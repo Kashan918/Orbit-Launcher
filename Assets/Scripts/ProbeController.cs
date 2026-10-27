@@ -221,6 +221,28 @@ namespace OrbitLauncher
             }
         }
 
+        public void ParkForMainMenu(Vector2 offscreenPos)
+        {
+            StopAllCoroutines();
+            CurrentAnchor = null;
+            LastReleasedAnchor = null;
+            _ignoreGravity = false;
+            _freeFlightTimer = 0f;
+            _warpTimer = 0f;
+
+            if (_warpShieldVisual != null) _warpShieldVisual.gameObject.SetActive(false);
+            if (_hullVisual != null) _hullVisual.gameObject.SetActive(false);
+            if (_aimLine != null) _aimLine.enabled = false;
+
+            transform.position = offscreenPos;
+            _rb.position = offscreenPos;
+            _rb.linearVelocity = Vector2.zero;
+
+            if (_mainTrail != null) _mainTrail.Clear();
+            if (_twinTrailLeft != null) _twinTrailLeft.Clear();
+            if (_twinTrailRight != null) _twinTrailRight.Clear();
+        }
+
         public void ResetAndLaunch(Vector2 startPosition, Vector2 initialDirection)
         {
             StopAllCoroutines();
@@ -509,7 +531,7 @@ namespace OrbitLauncher
             if (_hullVisual != null) _hullVisual.gameObject.SetActive(false);
             if (_warpShieldVisual != null) _warpShieldVisual.gameObject.SetActive(false);
 
-            if (CameraRig.Instance != null)
+            if (CameraRig.Instance != null && (GameManager.Instance == null || GameManager.Instance.ScreenShakeEnabled))
             {
                 // GDD Section 4 & 7: screenshake for 0.2s at magnitude 0.4
                 CameraRig.Instance.TriggerShake(0.2f, 0.4f);

@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 namespace OrbitLauncher
@@ -6,9 +7,16 @@ namespace OrbitLauncher
     {
         public static AudioManager Instance { get; private set; }
 
+        [Header("Music Clips (Auto-Loaded from Resources/Audio)")]
+        [SerializeField] private AudioClip _menuMusicClip;
+        [SerializeField] private AudioClip _gameplayMusicClip;
+        [Range(0f, 1f)]
+        [SerializeField] private float _musicVolume = 0.52f;
+
         private AudioSource _sfxSource;
         private AudioSource _chimeSource;
-        private AudioSource _ambientSource;
+        private AudioSource _menuMusicSource;
+        private AudioSource _gameplayMusicSource;
 
         private AudioClip[] _pentatonicChimes;
         private AudioClip _releaseClip;
@@ -16,7 +24,9 @@ namespace OrbitLauncher
         private AudioClip _warpClip;
         private AudioClip _deathClip;
         private AudioClip _clickClip;
-        private AudioClip _ambientClip;
+
+        private bool _playingGameplayTrack;
+        private Coroutine _crossfadeRoutine;
 
         public bool IsMuted { get; private set; }
 
@@ -35,10 +45,15 @@ namespace OrbitLauncher
             _chimeSource = gameObject.AddComponent<AudioSource>();
             _chimeSource.playOnAwake = false;
 
-            _ambientSource = gameObject.AddComponent<AudioSource>();
-            _ambientSource.loop = true;
-            _ambientSource.volume = 0.28f;
-            _ambientSource.playOnAwake = false;
+            _menuMusicSource = gameObject.AddComponent<AudioSource>();
+            _menuMusicSource.loop = true;
+            _menuMusicSource.volume = _musicVolume;
+            _menuMusicSource.playOnAwake = false;
+
+            _gameplayMusicSource = gameObject.AddComponent<AudioSource>();
+            _gameplayMusicSource.loop = true;
+            _gameplayMusicSource.volume = 0f;
+            _gameplayMusicSource.playOnAwake = false;
 
             IsMuted = PlayerPrefs.GetInt("OL_Muted", 0) == 1;
             LoadOrGenerateClips();
@@ -47,11 +62,7 @@ namespace OrbitLauncher
 
         private void Start()
         {
-            if (_ambientClip != null && !_ambientSource.isPlaying)
-            {
-                _ambientSource.clip = _ambientClip;
-                _ambientSource.Play();
-            }
+            PlayMenuMusic(true);
         }
 
         private void LoadOrGenerateClips()
@@ -72,7 +83,78 @@ namespace OrbitLauncher
             _warpClip = Resources.Load<AudioClip>("Audio/warp_shield") ?? CreateSweepClip("warp", 330f, 990f, 0.55f);
             _deathClip = Resources.Load<AudioClip>("Audio/death_shatter") ?? CreateNoiseBurstClip("death", 0.50f);
             _clickClip = Resources.Load<AudioClip>("Audio/ui_click") ?? CreateChimeClip("click", 880f, 0.07f);
-            _ambientClip = Resources.Load<AudioClip>("Audio/ambient_pad") ?? CreateAmbientClip();
+
+            if (_menuMusicClip == null)
+                _menuMusicClip = Resources.Load<AudioClip>("Audio/bgm_main_menu") ?? CreateProceduralMenuMusic();
+
+            if (_gameplayMusicClip == null)
+                _gameplayMusicClip = Resources.Load<AudioClip>("Audio/bgm_gameplay") ?? CreateProceduralGameplayMusic();
+
+            _menuMusicSource.clip = _menuMusicClip;
+            _gameplayMusicSource.clip = _gameplayMusicClip;
+        }
+
+        public void PlayMenuMusic(bool immediate = false)
+        {
+            _playingGameplayTrack = false;
+            if (_menuMusicSource != null && _menuMusicClip != null && !_menuMusicSource.isPlaying)
+            {
+                _menuMusicSource.clip = _menuMusicClip;
+                _menuMusicSource.Play();
+            }
+
+            if (immediate)
+            {
+                if (_menuMusicSource != null) _menuMusicSource.volume = _musicVolume;
+                if (_gameplayMusicSource != null)
+                {
+                    _gameplayMusicSource.volume = 0f;
+                    _gameplayMusicSource.Stop();
+                }
+                return;
+            }
+
+            if (_crossfadeRoutine != null) StopCoroutine(_crossfadeRoutine);
+            _crossfadeRoutine = StartCoroutine(CrossfadeMusic(_menuMusicSource, _gameplayMusicSource, 0.65f));
+        }
+
+        public void PlayGameplayMusic()
+        {
+            if (_playingGameplayTrack && _gameplayMusicSource != null && _gameplayMusicSource.isPlaying)
+                return;
+
+            _playingGameplayTrack = true;
+            if (_gameplayMusicSource != null && _gameplayMusicClip != null && !_gameplayMusicSource.isPlaying)
+            {
+                _gameplayMusicSource.clip = _gameplayMusicClip;
+                _gameplayMusicSource.Play();
+            }
+
+            if (_crossfadeRoutine != null) StopCoroutine(_crossfadeRoutine);
+            _crossfadeRoutine = StartCoroutine(CrossfadeMusic(_gameplayMusicSource, _menuMusicSource, 0.65f));
+        }
+
+        private IEnumerator CrossfadeMusic(AudioSource fadeIn, AudioSource fadeOut, float duration)
+        {
+            float startIn = fadeIn != null ? fadeIn.volume : 0f;
+            float startOut = fadeOut != null ? fadeOut.volume : 0f;
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                if (fadeIn != null) fadeIn.volume = Mathf.Lerp(startIn, _musicVolume, t);
+                if (fadeOut != null) fadeOut.volume = Mathf.Lerp(startOut, 0f, t);
+                yield return null;
+            }
+
+            if (fadeIn != null) fadeIn.volume = _musicVolume;
+            if (fadeOut != null)
+            {
+                fadeOut.volume = 0f;
+                fadeOut.Stop();
+            }
         }
 
         public void ToggleMute()
@@ -87,7 +169,8 @@ namespace OrbitLauncher
         {
             if (_sfxSource != null) _sfxSource.mute = IsMuted;
             if (_chimeSource != null) _chimeSource.mute = IsMuted;
-            if (_ambientSource != null) _ambientSource.mute = IsMuted;
+            if (_menuMusicSource != null) _menuMusicSource.mute = IsMuted;
+            if (_gameplayMusicSource != null) _gameplayMusicSource.mute = IsMuted;
         }
 
         public void PlayCaptureChime(int consecutivePerfects)
@@ -190,25 +273,95 @@ namespace OrbitLauncher
             return clip;
         }
 
-        private AudioClip CreateAmbientClip()
+        private static float MidiFreq(int midi) => 440f * Mathf.Pow(2f, (midi - 69) / 12f);
+
+        private AudioClip CreateProceduralMenuMusic()
         {
             int sr = 22050;
-            float duration = 6.0f;
+            float beatSec = 0.6f;
+            float stepSec = beatSec * 0.25f;
+            float duration = 16f * beatSec;
             int count = Mathf.CeilToInt(sr * duration);
             float[] data = new float[count];
+            int[][] chords =
+            {
+                new[] { 48, 55, 58, 63, 67 },
+                new[] { 44, 51, 56, 60, 63 },
+                new[] { 51, 58, 62, 63, 67 },
+                new[] { 46, 53, 58, 60, 65 }
+            };
+            int[] arp = { 0, 2, 3, 4, 3, 2, 4, 3 };
+
             for (int i = 0; i < count; i++)
             {
                 float t = i / (float)sr;
-                float lfo = 0.85f + 0.15f * Mathf.Sin(2f * Mathf.PI * (t / duration) * 2f);
-                float sig = Mathf.Sin(2f * Mathf.PI * 65.41f * t) * 0.30f +
-                            Mathf.Sin(2f * Mathf.PI * 98.00f * t) * 0.22f +
-                            Mathf.Sin(2f * Mathf.PI * 146.83f * t) * 0.16f;
-                data[i] = sig * lfo * 0.45f;
+                float beatPos = t / beatSec;
+                int bar = ((int)(beatPos / 4f)) % 4;
+                int[] ch = chords[bar];
+
+                float pad = (Mathf.Sin(2f * Mathf.PI * MidiFreq(ch[1]) * t) +
+                             Mathf.Sin(2f * Mathf.PI * MidiFreq(ch[2]) * t) +
+                             Mathf.Sin(2f * Mathf.PI * MidiFreq(ch[3]) * t)) * 0.12f;
+
+                int step = (int)(t / stepSec);
+                float st = t - step * stepSec;
+                float af = MidiFreq(ch[arp[step % arp.Length]] + 12);
+                float arpSig = Mathf.Sin(2f * Mathf.PI * af * t) * Mathf.Exp(-st * 16f) * 0.24f;
+
+                float bf = MidiFreq(ch[0] - 12);
+                float bass = Mathf.Sin(2f * Mathf.PI * bf * t) * 0.26f;
+
+                data[i] = Mathf.Clamp(pad + arpSig + bass, -0.9f, 0.9f);
             }
-            AudioClip clip = AudioClip.Create("ambient_pad", count, 1, sr, false);
+            AudioClip clip = AudioClip.Create("bgm_main_menu_proc", count, 1, sr, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        private AudioClip CreateProceduralGameplayMusic()
+        {
+            int sr = 22050;
+            float beatSec = 60f / 128f;
+            float stepSec = beatSec * 0.25f;
+            float duration = 16f * beatSec;
+            int count = Mathf.CeilToInt(sr * duration);
+            float[] data = new float[count];
+            int[][] chords =
+            {
+                new[] { 45, 52, 57, 60, 64 },
+                new[] { 41, 48, 53, 57, 60 },
+                new[] { 48, 55, 60, 64, 67 },
+                new[] { 43, 50, 55, 59, 62 }
+            };
+            int[] arp = { 0, 2, 3, 4, 2, 3, 4, 3 };
+
+            for (int i = 0; i < count; i++)
+            {
+                float t = i / (float)sr;
+                float beatPos = t / beatSec;
+                int bar = ((int)(beatPos / 4f)) % 4;
+                int[] ch = chords[bar];
+
+                int step16 = (int)(t / stepSec);
+                float st = t - step16 * stepSec;
+                float af = MidiFreq(ch[arp[step16 % arp.Length]] + 12);
+                float arpSig = Mathf.Sin(2f * Mathf.PI * af * t) * Mathf.Exp(-st * 20f) * 0.24f;
+
+                int step8 = (int)(t / (stepSec * 2f));
+                float bt = t - step8 * (stepSec * 2f);
+                float bf = MidiFreq(step8 % 2 == 0 ? ch[0] - 12 : ch[0]);
+                float bass = Mathf.Sin(2f * Mathf.PI * bf * t) * Mathf.Exp(-bt * 10f) * 0.32f;
+
+                float bFrac = (beatPos - Mathf.Floor(beatPos)) * beatSec;
+                float kick = bFrac < 0.14f
+                    ? Mathf.Sin(2f * Mathf.PI * (46f + 110f * Mathf.Exp(-bFrac * 40f)) * bFrac) * Mathf.Exp(-bFrac * 18f) * 0.35f
+                    : 0f;
+
+                data[i] = Mathf.Clamp(arpSig + bass + kick, -0.9f, 0.9f);
+            }
+            AudioClip clip = AudioClip.Create("bgm_gameplay_proc", count, 1, sr, false);
             clip.SetData(data, 0);
             return clip;
         }
     }
 }
-

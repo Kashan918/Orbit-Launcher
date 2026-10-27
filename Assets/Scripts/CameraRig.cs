@@ -130,6 +130,16 @@ namespace OrbitLauncher
 
         private void LateUpdate()
         {
+            if (GameManager.Instance != null && (GameManager.Instance.IsInMainMenu || GameManager.Instance.IsSplashActive))
+            {
+                Vector3 menuCenter = new Vector3(0f, 0f, -10f);
+                _basePosition = Vector3.Lerp(_basePosition, menuCenter, smoothSpeed * Time.unscaledDeltaTime);
+                _cam.orthographicSize = Mathf.Lerp(_cam.orthographicSize, 8.2f, 5f * Time.unscaledDeltaTime);
+                transform.position = _basePosition;
+                UpdateStarfield();
+                return;
+            }
+
             if (targetProbe != null)
             {
                 Vector2 focusPos = targetProbe.position;

@@ -166,50 +166,10 @@ namespace OrbitLauncher
 
         public void SpawnFloatingPopup(Vector2 worldPos, string text, Color textColor, float scale = 1f)
         {
-            StartCoroutine(AnimateFloatingPopup(worldPos, text, textColor, scale));
-        }
-
-        private IEnumerator AnimateFloatingPopup(Vector2 startPos, string message, Color color, float scale)
-        {
-            GameObject popupGo = new GameObject("VFX_FloatingPopup");
-            popupGo.transform.position = new Vector3(startPos.x, startPos.y, -2f);
-            popupGo.transform.localScale = Vector3.one * (0.09f * scale);
-
-            // Background pill sprite
-            GameObject bgGo = new GameObject("PillBg");
-            bgGo.transform.SetParent(popupGo.transform, false);
-            SpriteRenderer bgSr = bgGo.AddComponent<SpriteRenderer>();
-            bgSr.sprite = OrbitAssetFactory.GetSprite("solid_disc");
-            bgSr.color = new Color(0.02f, 0.05f, 0.12f, 0.85f);
-            bgSr.sortingOrder = 29;
-            bgGo.transform.localScale = new Vector3(message.Length * 0.55f + 1.2f, 1.45f, 1f);
-
-            TextMesh tm = popupGo.AddComponent<TextMesh>();
-            tm.text = message;
-            tm.fontSize = 36;
-            tm.characterSize = 0.25f;
-            tm.anchor = TextAnchor.MiddleCenter;
-            tm.alignment = TextAlignment.Center;
-            tm.fontStyle = FontStyle.Bold;
-            tm.color = color;
-
-            MeshRenderer mr = popupGo.GetComponent<MeshRenderer>();
-            if (mr != null) mr.sortingOrder = 30;
-
-            float duration = 0.95f;
-            float elapsed = 0f;
-            while (elapsed < duration)
+            if (UIManager.Instance != null)
             {
-                if (popupGo == null) yield break;
-                elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / duration);
-                popupGo.transform.position = new Vector3(startPos.x, startPos.y + t * 1.35f, -2f);
-                float alpha = t < 0.7f ? 1f : 1f - ((t - 0.7f) / 0.3f);
-                tm.color = new Color(color.r, color.g, color.b, alpha);
-                bgSr.color = new Color(0.02f, 0.05f, 0.12f, 0.85f * alpha);
-                yield return null;
+                UIManager.Instance.SpawnWorldPopup(worldPos, text, textColor, scale);
             }
-            if (popupGo != null) Destroy(popupGo);
         }
     }
 }
