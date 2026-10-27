@@ -1,0 +1,1666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>ORBIT LAUNCHER • Top-Down Orbital Hopper</title>
+<style>
+  :root {
+    --void-blue: #050813;
+    --neon-cyan: #00f0ff;
+    --lime: #00ff88;
+    --crimson: #ff2a5f;
+    --gold: #ffd644;
+    --purple: #b855ff;
+    --card-bg: rgba(7, 14, 34, 0.86);
+  }
+  * { box-sizing: border-box; user-select: none; -webkit-user-select: none; margin: 0; padding: 0; }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: var(--void-blue);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: #fff;
+  }
+  canvas {
+    position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+    cursor: pointer;
+  }
+
+  /* ==================== ANIMATED SPLASH SCREEN ==================== */
+  #splashScreen {
+    position: absolute; inset: 0; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 42%, rgba(8, 22, 54, 0.45) 0%, rgba(5, 8, 19, 0.82) 100%);
+    transition: opacity 0.65s cubic-bezier(0.4, 0, 0.2, 1), transform 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: auto;
+  }
+  #splashScreen.hide {
+    opacity: 0;
+    transform: scale(1.08);
+    pointer-events: none;
+  }
+  .splash-card {
+    position: relative;
+    width: 92%; max-width: 680px;
+    background: rgba(6, 13, 32, 0.78);
+    border: 1.5px solid rgba(0, 240, 255, 0.45);
+    border-radius: 24px;
+    padding: 38px 32px 34px;
+    text-align: center;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 0 60px rgba(0, 240, 255, 0.18), inset 0 0 30px rgba(0, 240, 255, 0.06);
+    animation: cardFloat 4s ease-in-out infinite;
+  }
+  @keyframes cardFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-7px); }
+  }
+  .splash-badge {
+    display: inline-block;
+    padding: 5px 16px;
+    border-radius: 999px;
+    background: rgba(0, 255, 136, 0.12);
+    border: 1px solid rgba(0, 255, 136, 0.45);
+    color: var(--lime);
+    font-size: 11px; font-weight: 800; letter-spacing: 2.2px;
+    margin-bottom: 18px;
+    animation: badgePulse 2.4s ease-in-out infinite;
+  }
+  @keyframes badgePulse {
+    0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.15); }
+    50% { box-shadow: 0 0 22px rgba(0, 255, 136, 0.45); }
+  }
+
+  /* Per-Letter Animated Game Name */
+  .animated-title {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 3px;
+    margin-bottom: 10px;
+    perspective: 600px;
+  }
+  .title-letter {
+    display: inline-block;
+    font-size: clamp(30px, 6vw, 54px);
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: #fff;
+    text-shadow: 0 0 18px rgba(0, 240, 255, 0.75), 0 0 36px rgba(0, 240, 255, 0.35);
+    opacity: 0;
+    transform: translateY(28px) scale(0.3) rotateX(-45deg);
+    animation:
+      letterPopIn 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+      letterWave 2.4s ease-in-out infinite;
+    animation-delay: var(--pop-delay, 0s), var(--wave-delay, 0.6s);
+  }
+  .title-letter.orbit-word {
+    color: var(--neon-cyan);
+    text-shadow: 0 0 20px rgba(0, 240, 255, 0.9), 0 0 40px rgba(0, 255, 136, 0.4);
+  }
+  .title-letter.space { width: clamp(12px, 2.5vw, 22px); }
+
+  @keyframes letterPopIn {
+    0% { opacity: 0; transform: translateY(28px) scale(0.3) rotateX(-45deg); }
+    70% { opacity: 1; transform: translateY(-6px) scale(1.12) rotateX(8deg); }
+    100% { opacity: 1; transform: translateY(0px) scale(1) rotateX(0deg); }
+  }
+  @keyframes letterWave {
+    0%, 100% {
+      transform: translateY(0px) scale(1);
+      filter: brightness(1);
+    }
+    50% {
+      transform: translateY(-8px) scale(1.06);
+      filter: brightness(1.3) drop-shadow(0 0 10px var(--lime));
+    }
+  }
+
+  .splash-subtitle {
+    font-size: 14px; font-weight: 800; letter-spacing: 3.2px;
+    color: #b4d8ff; margin-bottom: 30px;
+    opacity: 0;
+    animation: fadeSlideUp 0.6s ease forwards 0.65s;
+  }
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Loading Bar Container */
+  .loading-wrap {
+    width: 100%; max-width: 520px; margin: 0 auto;
+    opacity: 0;
+    animation: fadeSlideUp 0.6s ease forwards 0.8s;
+  }
+  .loading-track {
+    position: relative;
+    width: 100%; height: 16px;
+    background: rgba(3, 7, 18, 0.95);
+    border: 1.5px solid rgba(0, 240, 255, 0.45);
+    border-radius: 999px;
+    overflow: hidden;
+    box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.8), 0 0 18px rgba(0, 240, 255, 0.18);
+  }
+  .loading-fill {
+    position: relative;
+    width: 0%; height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--neon-cyan), var(--lime), #ffffff);
+    box-shadow: 0 0 20px var(--lime);
+    transition: width 0.08s linear;
+  }
+  .loading-fill::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.65), transparent);
+    animation: barShimmer 1.1s linear infinite;
+  }
+  @keyframes barShimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  .loading-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 10px; font-size: 12px; font-weight: 800; letter-spacing: 1.3px;
+  }
+  #splashStatus { color: var(--neon-cyan); }
+  #splashPercent { color: var(--lime); font-size: 14px; }
+
+  /* ==================== GAMEPLAY HUD & UI ANIMATIONS ==================== */
+  #hud {
+    position: absolute; inset: 0; pointer-events: none;
+    display: flex; flex-direction: column; justify-content: space-between;
+    padding: 18px 22px;
+    opacity: 0; transform: translateY(-10px);
+    transition: opacity 0.55s ease, transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  #hud.hud-visible {
+    opacity: 1; transform: translateY(0);
+  }
+  .top-bar {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  }
+  .hud-card {
+    background: var(--card-bg);
+    border: 1.5px solid rgba(0, 240, 255, 0.42);
+    border-radius: 12px;
+    padding: 10px 18px;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 0 22px rgba(0, 240, 255, 0.14);
+    pointer-events: auto;
+    transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.25s, box-shadow 0.25s;
+  }
+  .hud-card.pop-punch {
+    transform: scale(1.15);
+  }
+  .score-box { min-width: 165px; }
+  .hud-label {
+    font-size: 11px; font-weight: 800; letter-spacing: 1.4px;
+    color: #8ab8e6; text-transform: uppercase;
+  }
+  .score-val {
+    font-size: 30px; font-weight: 900; letter-spacing: 0.5px; color: #fff;
+    line-height: 1.15;
+  }
+  .combo-box {
+    text-align: center; min-width: 195px;
+  }
+  .combo-box.active-combo {
+    border-color: var(--lime);
+    box-shadow: 0 0 28px rgba(0, 255, 136, 0.32);
+    animation: comboGlowPulse 1.6s ease-in-out infinite;
+  }
+  @keyframes comboGlowPulse {
+    0%, 100% { box-shadow: 0 0 22px rgba(0, 255, 136, 0.25); }
+    50% { box-shadow: 0 0 36px rgba(0, 255, 136, 0.55); }
+  }
+  .combo-label { color: var(--lime); }
+  .combo-val {
+    font-size: 26px; font-weight: 900; color: #fff; line-height: 1.15;
+  }
+  .warp-pips {
+    display: flex; gap: 5px; justify-content: center; margin-top: 5px;
+  }
+  .warp-pip {
+    width: 22px; height: 5px; border-radius: 3px;
+    background: rgba(255, 255, 255, 0.16);
+    transition: background 0.25s, box-shadow 0.25s, transform 0.25s;
+  }
+  .warp-pip.filled { background: var(--lime); box-shadow: 0 0 8px var(--lime); transform: scaleY(1.25); }
+  .warp-pip.shield { background: var(--neon-cyan); box-shadow: 0 0 10px var(--neon-cyan); transform: scaleY(1.35); }
+
+  .right-controls {
+    display: flex; align-items: center; gap: 10px; pointer-events: auto;
+  }
+  .shard-pill {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 16px; border-radius: 12px;
+    background: var(--card-bg);
+    border: 1.5px solid rgba(255, 214, 68, 0.45);
+    font-weight: 800; font-size: 20px;
+    transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .shard-pill.pop-punch { transform: scale(1.18); border-color: var(--gold); }
+  .shard-diamond {
+    width: 14px; height: 14px; background: var(--gold);
+    transform: rotate(45deg);
+    box-shadow: 0 0 10px var(--gold);
+    animation: diamondSpin 3s ease-in-out infinite;
+  }
+  @keyframes diamondSpin {
+    0%, 100% { transform: rotate(45deg) scale(1); }
+    50% { transform: rotate(225deg) scale(1.15); }
+  }
+  .icon-btn {
+    width: 46px; height: 46px; border-radius: 12px;
+    background: var(--card-bg);
+    border: 1.5px solid rgba(0, 240, 255, 0.45);
+    color: #fff; font-weight: 900; font-size: 16px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s, box-shadow 0.2s;
+  }
+  .icon-btn:hover { border-color: var(--lime); transform: translateY(-2px) scale(1.08); box-shadow: 0 0 16px rgba(0,255,136,0.35); }
+  .icon-btn:active { transform: scale(0.92); }
+
+  /* Tier Banner */
+  #tierBanner {
+    align-self: center;
+    background: rgba(5, 11, 28, 0.92);
+    border: 1.5px solid var(--neon-cyan);
+    border-radius: 14px;
+    padding: 12px 26px;
+    text-align: center;
+    max-width: 500px;
+    opacity: 0; transform: translateY(-22px) scale(0.92);
+    transition: opacity 0.38s ease, transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 0 30px rgba(0, 240, 255, 0.22);
+  }
+  #tierBanner.show { opacity: 1; transform: translateY(0) scale(1); }
+  #tierTag { font-size: 11px; font-weight: 800; letter-spacing: 1.6px; color: var(--neon-cyan); }
+  #tierName { font-size: 24px; font-weight: 900; margin: 2px 0; }
+  #tierTip { font-size: 13px; color: #b5d3f0; }
+
+  /* Bottom Pill */
+  .bottom-bar {
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+  }
+  .tap-pill {
+    background: rgba(6, 14, 32, 0.82);
+    border: 1.5px solid rgba(0, 240, 255, 0.4);
+    border-radius: 999px;
+    padding: 9px 28px;
+    font-size: 13px; font-weight: 800; letter-spacing: 1.5px;
+    color: #d8f3ff;
+    box-shadow: 0 0 18px rgba(0, 240, 255, 0.15);
+    animation: pillBreath 1.8s ease-in-out infinite;
+  }
+  @keyframes pillBreath {
+    0%, 100% { transform: scale(1); border-color: rgba(0, 240, 255, 0.4); }
+    50% { transform: scale(1.04); border-color: rgba(0, 255, 136, 0.75); }
+  }
+
+  /* Modals with Spring Pop-In Animation */
+  .modal-overlay {
+    position: absolute; inset: 0;
+    background: rgba(3, 6, 16, 0.86);
+    backdrop-filter: blur(10px);
+    display: none; align-items: center; justify-content: center;
+    z-index: 20; padding: 20px;
+  }
+  .modal-overlay.active {
+    display: flex;
+    animation: overlayFadeIn 0.25s ease forwards;
+  }
+  @keyframes overlayFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .modal-card {
+    width: 100%; max-width: 460px;
+    background: rgba(8, 15, 36, 0.96);
+    border: 1.5px solid rgba(0, 240, 255, 0.5);
+    border-radius: 20px;
+    padding: 28px 26px;
+    text-align: center;
+    box-shadow: 0 0 50px rgba(0, 240, 255, 0.2);
+    animation: modalSpringIn 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  @keyframes modalSpringIn {
+    0% { opacity: 0; transform: scale(0.8) translateY(24px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .modal-title { font-size: 36px; font-weight: 900; letter-spacing: 1.5px; }
+  .modal-sub { font-size: 14px; color: var(--crimson); margin-top: 4px; margin-bottom: 20px; font-weight: 600; }
+  .stats-table {
+    background: rgba(3, 7, 19, 0.9);
+    border: 1px solid rgba(0, 240, 255, 0.24);
+    border-radius: 14px;
+    padding: 14px 20px;
+    margin-bottom: 22px;
+  }
+  .stat-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-lbl { font-size: 13px; font-weight: 700; color: #7fa6cc; letter-spacing: 1px; }
+  .stat-val { font-size: 20px; font-weight: 900; }
+
+  .primary-btn {
+    width: 100%; padding: 16px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(0, 255, 136, 0.22), rgba(0, 240, 255, 0.22));
+    border: 2px solid var(--lime);
+    color: #fff; font-size: 18px; font-weight: 900; letter-spacing: 1.5px;
+    cursor: pointer;
+    box-shadow: 0 0 24px rgba(0, 255, 136, 0.3);
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+    animation: btnPulse 2s ease-in-out infinite;
+  }
+  @keyframes btnPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 22px rgba(0, 255, 136, 0.28); }
+    50% { transform: scale(1.03); box-shadow: 0 0 34px rgba(0, 255, 136, 0.55); }
+  }
+  .primary-btn:hover { transform: scale(1.05); box-shadow: 0 0 38px rgba(0, 255, 136, 0.65); }
+  .primary-btn:active { transform: scale(0.96); }
+
+  .nav-links {
+    display: flex; justify-content: center; gap: 14px; margin-top: 18px;
+  }
+  .sec-btn {
+    padding: 9px 18px; border-radius: 10px;
+    background: rgba(14, 28, 60, 0.85);
+    border: 1px solid rgba(0, 240, 255, 0.4);
+    color: #bfe8ff; font-size: 13px; font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.2s, color 0.2s;
+  }
+  .sec-btn:hover { border-color: var(--lime); color: #fff; transform: translateY(-2px); }
+
+  /* Hulls List */
+  .hull-item {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(4, 9, 24, 0.9);
+    border: 1.5px solid rgba(0, 240, 255, 0.3);
+    border-radius: 12px;
+    padding: 12px 14px; margin-bottom: 10px; text-align: left;
+    transition: transform 0.16s, border-color 0.2s;
+  }
+  .hull-item:hover { transform: translateX(4px); border-color: var(--neon-cyan); }
+  .hull-info h4 { font-size: 15px; font-weight: 800; }
+  .hull-info p { font-size: 12px; color: #9ab8d9; margin-top: 2px; }
+  .hull-btn {
+    padding: 8px 14px; border-radius: 8px;
+    border: 1.5px solid var(--lime);
+    background: rgba(0, 255, 136, 0.15);
+    color: #fff; font-weight: 800; font-size: 12px; cursor: pointer;
+    min-width: 96px; text-align: center;
+    transition: transform 0.14s, background 0.2s;
+  }
+  .hull-btn:hover { transform: scale(1.06); background: rgba(0, 255, 136, 0.3); }
+</style>
+</head>
+<body>
+
+<canvas id="gameCanvas"></canvas>
+
+<!-- ==================== ANIMATED SPLASH SCREEN ==================== -->
+<div id="splashScreen">
+  <div class="splash-card">
+    <div class="splash-badge">COSMIC ARCADE EDITION • V1.1</div>
+    <div class="animated-title" id="animatedTitle"></div>
+    <div class="splash-subtitle">TOP-DOWN ORBITAL HOPPER</div>
+
+    <div class="loading-wrap">
+      <div class="loading-track">
+        <div class="loading-fill" id="splashBarFill"></div>
+      </div>
+      <div class="loading-meta">
+        <span id="splashStatus">INITIALIZING GRAVITY WELLS...</span>
+        <span id="splashPercent">0%</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== GAMEPLAY HUD ==================== -->
+<div id="hud">
+  <div class="top-bar">
+    <div class="hud-card score-box" id="hudScoreCard">
+      <div class="hud-label">SCORE</div>
+      <div class="score-val" id="hudScore">0</div>
+    </div>
+
+    <div class="hud-card combo-box" id="hudComboCard">
+      <div class="hud-label combo-label" id="hudComboLabel">STARLIGHT COMBO</div>
+      <div class="combo-val" id="hudCombo">×1</div>
+      <div class="warp-pips" id="warpPips">
+        <div class="warp-pip"></div><div class="warp-pip"></div><div class="warp-pip"></div><div class="warp-pip"></div><div class="warp-pip"></div>
+      </div>
+    </div>
+
+    <div class="right-controls">
+      <div class="shard-pill" id="hudShardPill">
+        <div class="shard-diamond"></div>
+        <span id="hudShards">30</span>
+      </div>
+      <button class="icon-btn" id="btnHullsTop" title="Probe Hulls">▲</button>
+      <button class="icon-btn" id="btnMute" title="Toggle Audio">♪</button>
+      <button class="icon-btn" id="btnPause" title="Pause">||</button>
+    </div>
+  </div>
+
+  <div id="tierBanner">
+    <div id="tierTag">TIER 1 • NEBULA</div>
+    <div id="tierName">NEBULA</div>
+    <div id="tierTip">Static planets, open space. Release when the tangent points at the next planet!</div>
+  </div>
+
+  <div class="bottom-bar">
+    <div class="tap-pill" id="bottomPrompt">TAP ANYWHERE OR PRESS SPACE TO RELEASE</div>
+  </div>
+</div>
+
+<!-- SIGNAL LOST (Game Over) Modal -->
+<div class="modal-overlay" id="gameOverModal">
+  <div class="modal-card">
+    <div class="modal-title">SIGNAL LOST</div>
+    <div class="modal-sub" id="goReason">Probe destroyed by asteroid</div>
+    <div class="stats-table">
+      <div class="stat-row"><span class="stat-lbl">SCORE</span><span class="stat-val" id="goScore">0</span></div>
+      <div class="stat-row"><span class="stat-lbl">BEST</span><span class="stat-val" style="color:var(--gold)" id="goBest">0</span></div>
+      <div class="stat-row"><span class="stat-lbl">STAR SHARDS</span><span class="stat-val" style="color:var(--neon-cyan)" id="goShards">+0</span></div>
+      <div class="stat-row"><span class="stat-lbl">COSMIC TIER</span><span class="stat-val" style="color:var(--lime)" id="goTier">Tier 1 • Nebula</span></div>
+    </div>
+    <button class="primary-btn" id="btnRetry">TAP TO RETRY</button>
+    <div class="nav-links">
+      <button class="sec-btn" id="btnGoHome">Home / Tiers</button>
+      <button class="sec-btn" id="btnGoHulls">Hulls</button>
+      <button class="sec-btn" id="btnGoLb">Leaderboard</button>
+    </div>
+  </div>
+</div>
+
+<!-- HOME / TIER SELECT Modal -->
+<div class="modal-overlay" id="homeModal">
+  <div class="modal-card">
+    <div class="modal-title" style="font-size:30px">ORBIT LAUNCHER</div>
+    <div class="modal-sub" style="color:var(--neon-cyan)">TOP-DOWN ORBITAL HOPPER • V1.1</div>
+    <p style="font-size:13px; color:#b8d4f2; line-height:1.5; margin-bottom:16px">
+      Ride each planet's gravity orbit and tap when the dotted tangent line turns <b style="color:var(--lime)">LIME</b> to sling toward the next planet. Chain 5 Perfect Hops for a 3.5s <b style="color:var(--neon-cyan)">Warp Shield</b>!
+    </p>
+    <div class="stats-table">
+      <div class="stat-row">
+        <span class="stat-lbl">STARTING TIER</span>
+        <button class="sec-btn" id="btnCycleTier">Tier 1: Nebula</button>
+      </div>
+      <div class="stat-row">
+        <span class="stat-lbl">RUN MODE</span>
+        <button class="sec-btn" id="btnCycleSeed">Endless Cosmic Void</button>
+      </div>
+    </div>
+    <button class="primary-btn" id="btnStartRun">LAUNCH PROBE</button>
+    <div class="nav-links">
+      <button class="sec-btn" id="btnHomeHulls">Hulls Hangar</button>
+      <button class="sec-btn" id="btnHomeLb">Leaderboard</button>
+    </div>
+  </div>
+</div>
+
+<!-- HULLS HANGAR Modal -->
+<div class="modal-overlay" id="hullsModal">
+  <div class="modal-card">
+    <div class="modal-title" style="font-size:28px">PROBE HULL HANGAR</div>
+    <div class="modal-sub" style="color:var(--gold)" id="hullShardsText">AVAILABLE SHARDS: ◆ 30</div>
+    <div id="hullsList"></div>
+    <button class="primary-btn" id="btnCloseHulls" style="margin-top:10px">BACK TO FLIGHT</button>
+  </div>
+</div>
+
+<!-- LEADERBOARD Modal -->
+<div class="modal-overlay" id="lbModal">
+  <div class="modal-card">
+    <div class="modal-title" style="font-size:26px; color:var(--gold)">COSMIC LEADERBOARD</div>
+    <div class="modal-sub" style="color:var(--neon-cyan)">WEEKLY GLOBAL & SEED STANDINGS</div>
+    <div class="stats-table" id="lbList"></div>
+    <button class="primary-btn" id="btnCloseLb">BACK</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+
+  // --- Build Per-Letter Animated Title ("ORBIT LAUNCHER") ---
+  const titleContainer = document.getElementById('animatedTitle');
+  const titleText = 'ORBIT LAUNCHER';
+  titleText.split('').forEach((ch, idx) => {
+    const span = document.createElement('span');
+    if (ch === ' ') {
+      span.className = 'title-letter space';
+      span.innerHTML = '&nbsp;';
+    } else {
+      span.className = 'title-letter' + (idx < 5 ? ' orbit-word' : '');
+      span.textContent = ch;
+      span.style.setProperty('--pop-delay', `${idx * 0.055}s`);
+      span.style.setProperty('--wave-delay', `${0.65 + idx * 0.08}s`);
+    }
+    titleContainer.appendChild(span);
+  });
+
+  // --- GDD Data: 5 Cosmic Tiers & 4 Probe Hulls ---
+  const TIERS = [
+    { num: 1, name: 'NEBULA', sub: 'Static planets, open space. Learn the timing.', tip: 'Release when the dotted tangent line turns LIME and points at the next planet!', color: '#00f0ff' },
+    { num: 2, name: 'ASTEROID RING', sub: 'Alternating CW / CCW orbits & drifting rocks.', tip: 'Read the arrows on each ring before capture. Flipped orbits reverse your launch side!', color: '#00ff88' },
+    { num: 3, name: 'BINARY STARS', sub: 'Decaying orbits and laser barriers. Move fast.', tip: 'Decaying planets shrink and collapse after 2 spins! Aim through the laser pulse gaps.', color: '#ffae2e' },
+    { num: 4, name: 'PULSAR STORM', sub: 'Oscillating gravity, spinning debris & mines.', tip: 'Strong pulses spin the probe faster. Feel the rhythm before tapping!', color: '#b855ff' },
+    { num: 5, name: 'SINGULARITY', sub: 'Moving planets, lensing & wandering black holes.', tip: 'Aim at where the planet WILL be! Missed shots near a Black Hole spiral in.', color: '#ff2a5f' }
+  ];
+
+  const HULLS = [
+    { id: 0, name: 'SCOUT PROBE', desc: 'Lime / cyan triangle with luminous gradient trail.', cost: 0, c1: '#00ff88', c2: '#00f0ff' },
+    { id: 1, name: 'NEON GLIDER', desc: 'Delta wing with pink and cyan twin trail.', cost: 25, c1: '#ff47c7', c2: '#00f0ff' },
+    { id: 2, name: 'ION DART', desc: 'Slim dart with high-velocity blue & gold ion flame.', cost: 60, c1: '#ffd644', c2: '#26a6ff' },
+    { id: 3, name: 'PULSAR CORE', desc: 'Glowing orb with gold ring and purple pulse aura.', cost: 120, c1: '#b855ff', c2: '#ffd644' }
+  ];
+
+  // --- Persistent State ---
+  let bestScore = parseInt(localStorage.getItem('OL_Best') || '0', 10);
+  let totalShards = parseInt(localStorage.getItem('OL_Shards') || '30', 10);
+  let equippedHull = parseInt(localStorage.getItem('OL_Hull') || '0', 10);
+  let unlockedHulls = JSON.parse(localStorage.getItem('OL_Unlocked') || '[0]');
+  let startTier = 1;
+  let dailySeedMode = false;
+  let isMuted = false;
+  let isPaused = false;
+  let splashActive = true;
+
+  // --- Moving Background Planets for Splash Screen ---
+  const splashPlanets = [
+    { baseX: -5.2, baseY: 3.1, x: -5.2, y: 3.1, r: 1.35, orbR: 2.35, color: '#00f0ff', dir: -1, vx: 0.7, vy: 0.45, phase: 0.2 },
+    { baseX: 5.4, baseY: 2.8, x: 5.4, y: 2.8, r: 1.15, orbR: 2.05, color: '#b855ff', dir: 1, vx: -0.65, vy: 0.5, phase: 1.4 },
+    { baseX: -5.6, baseY: -2.9, x: -5.6, y: -2.9, r: 1.05, orbR: 1.9, color: '#ffae2e', dir: -1, vx: 0.8, vy: -0.4, phase: 2.7 },
+    { baseX: 5.1, baseY: -3.1, x: 5.1, y: -3.1, r: 1.25, orbR: 2.2, color: '#00ff88', dir: 1, vx: -0.55, vy: -0.55, phase: 3.9 },
+    { baseX: 0.0, baseY: 3.5, x: 0.0, y: 3.5, r: 1.5, orbR: 2.6, color: '#ff2a5f', dir: -1, vx: 0.5, vy: 0.35, phase: 5.1 }
+  ];
+
+  // --- Run Splash Loading Sequence ---
+  const splashStages = [
+    'INITIALIZING GRAVITY WELLS...',
+    'CALIBRATING ORBITAL TANGENTS...',
+    'LOADING FIVE COSMIC SECTORS...',
+    'SYNTHESIZING PENTATONIC RESONANCE...',
+    'SYSTEMS NOMINAL • LAUNCHING PROBE!'
+  ];
+  let splashStartTime = performance.now();
+  const splashDuration = 3200;
+
+  function updateSplashProgress(now) {
+    if (!splashActive) return;
+    const elapsed = now - splashStartTime;
+    const rawT = Math.min(1, Math.max(0, elapsed / splashDuration));
+    const prog = rawT * rawT * (3 - 2 * rawT); // smoothstep
+
+    const pct = Math.round(prog * 100);
+    document.getElementById('splashBarFill').style.width = pct + '%';
+    document.getElementById('splashPercent').textContent = pct + '%';
+    const stIdx = Math.min(splashStages.length - 1, Math.floor(prog * splashStages.length));
+    document.getElementById('splashStatus').textContent = splashStages[stIdx];
+
+    if (rawT >= 1 && ! splashScreen._closing) {
+      splashScreen._closing = true;
+      setTimeout(() => {
+        document.getElementById('splashScreen').classList.add('hide');
+        document.getElementById('hud').classList.add('hud-visible');
+        splashActive = false;
+        startNewRun();
+      }, 320);
+    }
+  }
+
+  // --- UI Pop Punch Helper ---
+  function triggerCardPunch(elId) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    el.classList.remove('pop-punch');
+    void el.offsetWidth;
+    el.classList.add('pop-punch');
+    clearTimeout(el._punchTimer);
+    el._punchTimer = setTimeout(() => el.classList.remove('pop-punch'), 220);
+  }
+
+  // --- Web Audio API Synth (Pentatonic Glass-Synth + SFX) ---
+  let audioCtx = null;
+  const PENTATONIC = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50, 1174.66, 1318.51];
+
+  function ensureAudio() {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    }
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  function playChime(streak) {
+    if (isMuted) return;
+    ensureAudio();
+    if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+    const freq = PENTATONIC[Math.min(streak, PENTATONIC.length - 1)];
+    const osc1 = audioCtx.createOscillator();
+    const osc2 = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc1.type = 'sine';
+    osc2.type = 'triangle';
+    osc1.frequency.setValueAtTime(freq, now);
+    osc2.frequency.setValueAtTime(freq * 2, now);
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.linearRampToValueAtTime(0.22, now + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.48);
+    osc1.connect(gain); osc2.connect(gain); gain.connect(audioCtx.destination);
+    osc1.start(now); osc2.start(now);
+    osc1.stop(now + 0.5); osc2.stop(now + 0.5);
+  }
+
+  function playReleaseSfx(mult) {
+    if (isMuted) return;
+    ensureAudio();
+    if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    const base = 220 + mult * 30;
+    osc.frequency.setValueAtTime(base, now);
+    osc.frequency.exponentialRampToValueAtTime(base * 4.2, now + 0.22);
+    gain.gain.setValueAtTime(0.18, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(now); osc.stop(now + 0.25);
+  }
+
+  function playShardSfx() {
+    if (isMuted) return;
+    ensureAudio();
+    if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1046.5, now);
+    osc.frequency.setValueAtTime(1567.98, now + 0.07);
+    gain.gain.setValueAtTime(0.18, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(now); osc.stop(now + 0.34);
+  }
+
+  function playDeathSfx() {
+    if (isMuted) return;
+    ensureAudio();
+    if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(150, now);
+    osc.frequency.exponentialRampToValueAtTime(32, now + 0.45);
+    gain.gain.setValueAtTime(0.28, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.48);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(now); osc.stop(now + 0.5);
+  }
+
+  // --- Seeded RNG ---
+  let rngState = 12345;
+  function rand() {
+    rngState = (rngState * 1664525 + 1013904223) >>> 0;
+    return rngState / 4294967296;
+  }
+  function randRange(a, b) { return a + (b - a) * rand(); }
+
+  // --- World & Physics State ---
+  const PPU = 58;
+  let score = 0;
+  let displayedScore = 0;
+  let runShards = 0;
+  let perfectStreak = 0;
+  let comboMult = 1;
+  let currentTier = 1;
+  let gameTime = 0;
+
+  let planets = [];
+  let hazards = [];
+  let shards = [];
+  let particles = [];
+  let shockwaves = [];
+  let popups = [];
+  let stars = [];
+
+  let cam = { x: 0, y: 0, zoom: 1, targetZoom: 1, shakeTimer: 0, shakeMag: 0 };
+
+  const STATE = { FREE: 0, LOCKING: 1, ORBIT: 2, DEAD: 4 };
+  let probe = {
+    x: -4, y: -1,
+    vx: 10, vy: 2,
+    state: STATE.FREE,
+    anchor: null,
+    lastAnchor: null,
+    angle: 0,
+    radius: 2.4,
+    omega: 2.5,
+    dir: -1,
+    spinsRadians: 0,
+    ignoreGravityTimer: 0,
+    freeTimer: 0,
+    warpTimer: 0,
+    heading: 0,
+    lastReleaseClean: true,
+    trail: []
+  };
+
+  for (let i = 0; i < 130; i++) {
+    stars.push({
+      x: (Math.random() - 0.5) * 40,
+      y: (Math.random() - 0.5) * 40,
+      r: Math.random() * 1.9 + 0.6,
+      p: 0.14 + Math.random() * 0.16,
+      c: Math.random() > 0.3 ? '#d8ecff' : '#00f0ff',
+      a: 0.25 + Math.random() * 0.65
+    });
+  }
+
+  function getTierForHop(hopIdx) {
+    const eff = hopIdx + (startTier - 1) * 6;
+    if (eff < 6) return 1;
+    if (eff < 13) return 2;
+    if (eff < 21) return 3;
+    if (eff < 30) return 4;
+    return 5;
+  }
+
+  let nextHopIndex = 0;
+  let lastPlanetPos = { x: 0, y: 0 };
+
+  function spawnNextPlanet() {
+    const idx = nextHopIndex++;
+    const tier = getTierForHop(idx);
+    let px = 0, py = 0;
+    if (idx > 0) {
+      const dist = randRange(7.4, 9.2);
+      const ang = randRange(-0.42, 0.55);
+      px = lastPlanetPos.x + Math.cos(ang) * dist;
+      py = lastPlanetPos.y + Math.sin(ang) * dist;
+    }
+    const prev = { ...lastPlanetPos };
+    lastPlanetPos = { x: px, y: py };
+
+    const pRadius = randRange(0.92, 1.15);
+    const oRadius = randRange(2.2, 2.55);
+    let dir = -1;
+    if (tier >= 2 && idx > 0) {
+      dir = (idx % 2 === 1) ? 1 : -1;
+    }
+    const decaying = (tier === 3 && idx > 0 && idx % 2 === 0) || (tier >= 4 && idx > 0 && rand() < 0.28);
+    const pulsing = (tier === 4 && idx > 0) || (tier === 5 && rand() < 0.45);
+    const moving = (tier === 5 && idx > 0 && idx % 2 === 1);
+
+    const dx = px - prev.x, dy = py - prev.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const perpX = -dy / len, perpY = dx / len;
+
+    const hues = ['#00f0ff', '#b855ff', '#ff9d3b', '#00ff9d', '#ff3b7a'];
+    const pColor = decaying ? '#ff7733' : (pulsing ? '#b855ff' : (dir > 0 ? '#b855ff' : hues[(idx + tier) % hues.length]));
+
+    planets.push({
+      hopIndex: idx,
+      tier,
+      baseX: px, baseY: py,
+      x: px, y: py,
+      planetRadius: pRadius,
+      orbitRadius: oRadius,
+      captureRadius: oRadius * 1.42,
+      dir,
+      decaying,
+      pulsing,
+      moving,
+      perpX, perpY,
+      moveAmp: moving ? randRange(1.1, 1.65) : 0,
+      phase: idx * 1.3,
+      pulseMult: 1,
+      accumRadians: 0,
+      collapsed: false,
+      visited: false,
+      color: pColor
+    });
+
+    if (idx > 0) {
+      const midX = (prev.x + px) * 0.5;
+      const midY = (prev.y + py) * 0.5;
+      shards.push({
+        x: midX + perpX * randRange(-0.3, 0.3),
+        y: midY + perpY * randRange(-0.3, 0.3),
+        phase: idx,
+        collected: false
+      });
+
+      if (tier === 2) {
+        const s = rand() > 0.5 ? 1.55 : -1.55;
+        hazards.push({ type: 'asteroid', baseX: midX + perpX * s, baseY: midY + perpY * s, x: midX, y: midY, ax: perpX, ay: perpY, amp: 1.35, freq: 1.0, phase: idx, r: 0.42, rot: 0 });
+      } else if (tier === 3) {
+        const s = (idx % 2 === 1) ? 1.2 : -1.35;
+        hazards.push({ type: idx % 2 === 1 ? 'laser' : 'asteroid', baseX: midX + perpX * s, baseY: midY + perpY * s, x: midX, y: midY, ax: perpX, ay: perpY, amp: 0.85, freq: 1.15, phase: idx, r: 0.42, rot: Math.atan2(perpY, perpX) });
+      } else if (tier === 4) {
+        const s = (idx % 2 === 0) ? 1.65 : -1.65;
+        hazards.push({ type: idx % 2 === 0 ? 'debris' : 'mine', baseX: midX + perpX * s, baseY: midY + perpY * s, x: midX, y: midY, ax: perpX, ay: perpY, amp: 0.9, freq: 1.2, phase: idx, r: 0.46, rot: 0 });
+      } else if (tier >= 5) {
+        const s = (idx % 2 === 0) ? 2.35 : -2.35;
+        hazards.push({ type: 'blackhole', baseX: midX + perpX * s, baseY: midY + perpY * s, x: midX, y: midY, ax: perpX, ay: perpY, amp: 0.85, freq: 0.85, phase: idx, r: 0.72, rot: 0 });
+      }
+    }
+  }
+
+  function startNewRun() {
+    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+    isPaused = false;
+    score = 0;
+    displayedScore = 0;
+    runShards = 0;
+    perfectStreak = 0;
+    comboMult = 1;
+    currentTier = startTier;
+
+    const now = new Date();
+    rngState = dailySeedMode
+      ? (now.getUTCFullYear() * 10000 + (now.getUTCMonth() + 1) * 100 + now.getUTCDate())
+      : Math.floor(Math.random() * 9999999) + 1;
+
+    planets = []; hazards = []; shards = []; particles = []; shockwaves = []; popups = [];
+    nextHopIndex = 0;
+    lastPlanetPos = { x: 0, y: 0 };
+    for (let i = 0; i < 8; i++) spawnNextPlanet();
+
+    const first = planets[0];
+    probe.x = first.x - 4.2;
+    probe.y = first.y - 1.15;
+    const dx = first.x - probe.x;
+    const dy = (first.y - 1.2) - probe.y;
+    const l = Math.hypot(dx, dy) || 1;
+    probe.vx = (dx / l) * 10.5;
+    probe.vy = (dy / l) * 10.5;
+    probe.state = STATE.FREE;
+    probe.anchor = null;
+    probe.lastAnchor = null;
+    probe.ignoreGravityTimer = 0;
+    probe.freeTimer = 0;
+    probe.warpTimer = 0;
+    probe.lastReleaseClean = true;
+    probe.trail = [];
+
+    cam.x = first.x; cam.y = first.y;
+    updateHUD();
+    if (!splashActive) showTierBanner(currentTier);
+  }
+
+  function showTierBanner(tierNum) {
+    const info = TIERS[Math.min(Math.max(tierNum, 1), 5) - 1];
+    const el = document.getElementById('tierBanner');
+    document.getElementById('tierTag').textContent = `TIER ${info.num} • COSMIC SECTOR`;
+    document.getElementById('tierTag').style.color = info.color;
+    document.getElementById('tierName').textContent = info.name;
+    document.getElementById('tierTip').textContent = info.tip;
+    el.style.borderColor = info.color;
+    el.classList.add('show');
+    clearTimeout(el._timer);
+    el._timer = setTimeout(() => el.classList.remove('show'), 3200);
+  }
+
+  function spawnSparks(x, y, count, c1, c2, maxSpd = 7) {
+    for (let i = 0; i < count; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const s = 1.2 + Math.random() * maxSpd;
+      particles.push({
+        x, y,
+        vx: Math.cos(a) * s,
+        vy: Math.sin(a) * s,
+        life: 0,
+        maxLife: 0.25 + Math.random() * 0.45,
+        r: 2.5 + Math.random() * 4.5,
+        color: i % 2 === 0 ? c1 : c2
+      });
+    }
+  }
+
+  function checkTangentAim(px, py, tx, ty, currentHopIdx) {
+    const nextP = planets.find(p => p.hopIndex === currentHopIdx + 1 && !p.collapsed);
+    if (!nextP) return { hit: false, idealX: tx, idealY: ty };
+    const toX = nextP.x - px, toY = nextP.y - py;
+    const dist = Math.hypot(toX, toY);
+    if (dist < 0.1) return { hit: false, idealX: tx, idealY: ty };
+    const dot = (tx * toX + ty * toY) / dist;
+    if (dot <= 0.5) return { hit: false, idealX: tx, idealY: ty };
+    const perpDist = Math.abs(toX * (-ty) + toY * tx);
+    return {
+      hit: perpDist <= nextP.captureRadius * 0.92,
+      idealX: toX / dist,
+      idealY: toY / dist
+    };
+  }
+
+  function releaseProbe() {
+    if (splashActive) return;
+    if (probe.state !== STATE.LOCKING && probe.state !== STATE.ORBIT) return;
+    const a = probe.anchor;
+    if (!a) return;
+
+    const rx = probe.x - a.x, ry = probe.y - a.y;
+    const rLen = Math.hypot(rx, ry) || 1;
+    let tx = a.dir * (-ry / rLen);
+    let ty = a.dir * (rx / rLen);
+
+    const aim = checkTangentAim(probe.x, probe.y, tx, ty, a.hopIndex);
+    const loopedTooMuch = probe.spinsRadians > Math.PI * 4.1;
+    probe.lastReleaseClean = aim.hit && !loopedTooMuch;
+
+    if (aim.hit) {
+      tx = tx * 0.75 + aim.idealX * 0.25;
+      ty = ty * 0.75 + aim.idealY * 0.25;
+      const nl = Math.hypot(tx, ty) || 1;
+      tx /= nl; ty /= nl;
+    }
+
+    const speed = Math.min(16.5, Math.max(8.8, probe.omega * probe.radius * a.pulseMult * 1.5));
+    probe.vx = tx * speed;
+    probe.vy = ty * speed;
+    probe.lastAnchor = a;
+    probe.anchor = null;
+    probe.state = STATE.FREE;
+    probe.ignoreGravityTimer = 0.15;
+    probe.freeTimer = 0;
+
+    cam.targetZoom = 0.88;
+    setTimeout(() => { cam.targetZoom = 1.0; }, 220);
+
+    const hull = HULLS[equippedHull] || HULLS[0];
+    spawnSparks(probe.x, probe.y, 20, hull.c1, hull.c2, 5.5);
+    playReleaseSfx(comboMult);
+  }
+
+  function die(reason) {
+    if (probe.state === STATE.DEAD) return;
+    probe.state = STATE.DEAD;
+    probe.vx = 0; probe.vy = 0;
+    cam.shakeTimer = 0.22;
+    cam.shakeMag = 0.45;
+    const hull = HULLS[equippedHull] || HULLS[0];
+    spawnSparks(probe.x, probe.y, 65, hull.c1, '#ff2a5f', 8.5);
+    shockwaves.push({ x: probe.x, y: probe.y, r: 0.2, maxR: 3.6, color: '#ff2a5f', t: 0, dur: 0.48 });
+    playDeathSfx();
+
+    setTimeout(() => {
+      document.getElementById('goReason').textContent = reason;
+      document.getElementById('goScore').textContent = score.toLocaleString();
+      document.getElementById('goBest').textContent = bestScore.toLocaleString();
+      document.getElementById('goShards').textContent = '+' + runShards;
+      const tInfo = TIERS[Math.min(Math.max(currentTier, 1), 5) - 1];
+      document.getElementById('goTier').textContent = `Tier ${tInfo.num} • ${tInfo.name}`;
+      document.getElementById('gameOverModal').classList.add('active');
+    }, 440);
+  }
+
+  function onCapturePlanet(p) {
+    probe.anchor = p;
+    probe.dir = p.dir;
+    const rx = probe.x - p.x, ry = probe.y - p.y;
+    probe.angle = Math.atan2(ry, rx);
+    probe.radius = Math.hypot(rx, ry);
+
+    const vEntry = Math.max(6.4, Math.hypot(probe.vx, probe.vy) * 0.6);
+    probe.omega = vEntry / p.orbitRadius;
+    probe.vx = 0; probe.vy = 0;
+    probe.spinsRadians = 0;
+    probe.freeTimer = 0;
+    probe.state = STATE.LOCKING;
+
+    while (nextHopIndex <= p.hopIndex + 6) spawnNextPlanet();
+
+    if (!p.visited) {
+      p.visited = true;
+      if (p.tier > currentTier) {
+        currentTier = p.tier;
+        showTierBanner(currentTier);
+      }
+      if (p.hopIndex === 0) {
+        playChime(0);
+        shockwaves.push({ x: p.x, y: p.y, r: p.orbitRadius * 0.4, maxR: p.orbitRadius * 1.15, color: '#00f0ff', t: 0, dur: 0.35 });
+      } else if (probe.lastReleaseClean) {
+        perfectStreak++;
+        comboMult = perfectStreak === 1 ? 1 : (perfectStreak === 2 ? 2 : 4);
+        const pts = 100 * comboMult;
+        addScore(pts);
+        triggerCardPunch('hudComboCard');
+        playChime(perfectStreak);
+        shockwaves.push({ x: p.x, y: p.y, r: p.orbitRadius * 0.4, maxR: p.orbitRadius * 1.2, color: '#00ff88', t: 0, dur: 0.38 });
+        popups.push({ x: p.x, y: p.y + p.orbitRadius + 0.6, text: `PERFECT! +${pts}`, color: '#00ff88', t: 0, dur: 0.95 });
+
+        if (perfectStreak % 5 === 0) {
+          probe.warpTimer = 3.5;
+          popups.push({ x: probe.x, y: probe.y + 0.9, text: 'WARP SHIELD ACTIVE!', color: '#00f0ff', t: 0, dur: 1.1 });
+        }
+      } else {
+        perfectStreak = 0;
+        comboMult = 1;
+        addScore(100);
+        playChime(0);
+        popups.push({ x: p.x, y: p.y + p.orbitRadius + 0.5, text: 'CAPTURED +100', color: '#00f0ff', t: 0, dur: 0.85 });
+      }
+      updateHUD();
+    } else {
+      playChime(0);
+    }
+  }
+
+  function addScore(pts) {
+    score += pts;
+    if (score > bestScore) {
+      bestScore = score;
+      localStorage.setItem('OL_Best', String(bestScore));
+    }
+    triggerCardPunch('hudScoreCard');
+    updateHUD();
+  }
+
+  function updateHUD() {
+    document.getElementById('hudShards').textContent = totalShards.toString();
+    document.getElementById('hudCombo').textContent = '×' + comboMult;
+    const card = document.getElementById('hudComboCard');
+    card.classList.toggle('active-combo', comboMult >= 2);
+    document.getElementById('hudComboLabel').textContent = probe.warpTimer > 0 ? 'WARP INVULNERABILITY!' : 'STARLIGHT COMBO';
+
+    const pips = document.querySelectorAll('#warpPips .warp-pip');
+    const mod = perfectStreak % 5;
+    pips.forEach((pip, idx) => {
+      pip.className = 'warp-pip' + (probe.warpTimer > 0 ? ' shield' : (idx < mod ? ' filled' : ''));
+    });
+  }
+
+  // --- Update Loop ---
+  let lastTime = performance.now();
+  function update(dt, now) {
+    if (isPaused) return;
+    gameTime += dt;
+
+    // Smoothly roll score number in HUD
+    if (displayedScore !== score) {
+      const step = Math.max(400, Math.abs(score - displayedScore) * 10) * dt;
+      if (Math.abs(score - displayedScore) <= step) displayedScore = score;
+      else displayedScore += Math.sign(score - displayedScore) * step;
+      document.getElementById('hudScore').textContent = Math.round(displayedScore).toLocaleString();
+    }
+
+    if (splashActive) {
+      updateSplashProgress(now);
+      for (const sp of splashPlanets) {
+        sp.x = sp.baseX + Math.sin(gameTime * 0.85 + sp.phase) * 1.45 + Math.cos(gameTime * 0.4 + sp.phase) * sp.vx;
+        sp.y = sp.baseY + Math.cos(gameTime * 0.75 + sp.phase) * 1.15 + Math.sin(gameTime * 0.45 + sp.phase) * sp.vy;
+      }
+      return;
+    }
+
+    for (const p of planets) {
+      if (p.collapsed) continue;
+      if (p.pulsing) {
+        const w = Math.sin(gameTime * 2.6 + p.phase);
+        p.pulseMult = 0.78 + ((w + 1) * 0.5) * 0.62;
+      }
+      if (p.moving) {
+        const off = Math.sin(gameTime * 1.35 + p.phase) * p.moveAmp;
+        p.x = p.baseX + p.perpX * off;
+        p.y = p.baseY + p.perpY * off;
+      }
+    }
+
+    for (const h of hazards) {
+      if (h.dead) continue;
+      const off = Math.sin(gameTime * h.freq + h.phase) * h.amp;
+      h.x = h.baseX + h.ax * off;
+      h.y = h.baseY + h.ay * off;
+      h.rot += dt * (h.type === 'debris' ? 2.2 : 0.8);
+
+      if ((h.type === 'mine' || h.type === 'blackhole') && probe.state === STATE.FREE && probe.warpTimer <= 0) {
+        const dx = h.x - probe.x, dy = h.y - probe.y;
+        const dist = Math.hypot(dx, dy);
+        const pullR = h.type === 'blackhole' ? 3.5 : 2.3;
+        if (dist < pullR && dist > 0.1) {
+          const strength = (h.type === 'blackhole' ? 12.5 : 4.2) * (1 - dist / pullR);
+          probe.vx += (dx / dist) * strength * dt;
+          probe.vy += (dy / dist) * strength * dt;
+        }
+      }
+    }
+
+    if (probe.state !== STATE.DEAD) {
+      if (probe.ignoreGravityTimer > 0) probe.ignoreGravityTimer -= dt;
+      if (probe.warpTimer > 0) {
+        probe.warpTimer -= dt;
+        if (probe.warpTimer <= 0) updateHUD();
+      }
+
+      if (probe.state === STATE.FREE) {
+        probe.x += probe.vx * dt;
+        probe.y += probe.vy * dt;
+        probe.vx *= (1 - 0.015 * dt);
+        probe.vy *= (1 - 0.015 * dt);
+        probe.heading = Math.atan2(probe.vy, probe.vx);
+        probe.freeTimer += dt;
+
+        if (probe.freeTimer >= 4.0) {
+          die('Probe drifted into deep space');
+        }
+
+        if (probe.ignoreGravityTimer <= 0) {
+          for (const p of planets) {
+            if (p.collapsed || p === probe.lastAnchor) continue;
+            if (Math.hypot(probe.x - p.x, probe.y - p.y) <= p.captureRadius) {
+              onCapturePlanet(p);
+              break;
+            }
+          }
+        }
+      } else if (probe.state === STATE.LOCKING || probe.state === STATE.ORBIT) {
+        const a = probe.anchor;
+        if (a && !a.collapsed) {
+          if (probe.state === STATE.LOCKING) {
+            const diff = a.orbitRadius - probe.radius;
+            const step = 9.5 * dt;
+            if (Math.abs(diff) <= step) {
+              probe.radius = a.orbitRadius;
+              probe.state = STATE.ORBIT;
+            } else {
+              probe.radius += Math.sign(diff) * step;
+            }
+          }
+          const dAng = probe.dir * probe.omega * a.pulseMult * dt;
+          probe.angle += dAng;
+          probe.spinsRadians += Math.abs(dAng);
+          a.accumRadians += Math.abs(dAng);
+
+          probe.x = a.x + Math.cos(probe.angle) * probe.radius;
+          probe.y = a.y + Math.sin(probe.angle) * probe.radius;
+          const tx = probe.dir * (-Math.sin(probe.angle));
+          const ty = probe.dir * Math.cos(probe.angle);
+          probe.heading = Math.atan2(ty, tx);
+
+          if (a.decaying && a.accumRadians >= Math.PI * 4) {
+            a.collapsed = true;
+            spawnSparks(a.x, a.y, 45, '#ff2a5f', '#ffd644', 7);
+            die('Crushed by collapsing binary star');
+          }
+        }
+      }
+
+      probe.trail.push({ x: probe.x, y: probe.y, t: gameTime });
+      while (probe.trail.length > 0 && gameTime - probe.trail[0].t > 0.26) {
+        probe.trail.shift();
+      }
+
+      for (const s of shards) {
+        if (s.collected) continue;
+        const d = Math.hypot(probe.x - s.x, probe.y - s.y);
+        if (d < 1.8) {
+          s.x += (probe.x - s.x) * 8 * dt;
+          s.y += (probe.y - s.y) * 8 * dt;
+        }
+        if (d < 0.65) {
+          s.collected = true;
+          runShards++;
+          totalShards++;
+          localStorage.setItem('OL_Shards', String(totalShards));
+          triggerCardPunch('hudShardPill');
+          addScore(50 * comboMult);
+          playShardSfx();
+          spawnSparks(s.x, s.y, 18, '#ffd644', '#00f0ff', 4.5);
+          popups.push({ x: s.x, y: s.y + 0.4, text: '+1 SHARD', color: '#ffd644', t: 0, dur: 0.75 });
+        }
+      }
+
+      for (const h of hazards) {
+        if (h.dead) continue;
+        const d = Math.hypot(probe.x - h.x, probe.y - h.y);
+        let hit = false;
+        if (h.type === 'laser') {
+          const laserOn = Math.sin(gameTime * 2.2 + h.phase) > -0.35;
+          if (laserOn && d < 1.35) hit = true;
+        } else if (d < h.r + 0.24) {
+          hit = true;
+        }
+        if (hit) {
+          if (probe.warpTimer > 0 && h.type !== 'blackhole') {
+            h.dead = true;
+            addScore(250);
+            spawnSparks(h.x, h.y, 25, '#ff2a5f', '#00f0ff', 5.5);
+            popups.push({ x: h.x, y: h.y, text: 'WARP SMASH! +250', color: '#00f0ff', t: 0, dur: 0.85 });
+            playShardSfx();
+          } else {
+            const reasons = {
+              asteroid: 'Probe destroyed by asteroid',
+              laser: 'Vaporized by laser barrier',
+              debris: 'Shattered by spinning orbital debris',
+              mine: 'Detonated by magnetic mine',
+              blackhole: 'Swallowed by wandering black hole'
+            };
+            die(reasons[h.type] || 'Probe destroyed by hazard');
+            break;
+          }
+        }
+      }
+    }
+
+    let focusX = probe.x, focusY = probe.y;
+    const curIdx = probe.anchor ? probe.anchor.hopIndex : (probe.lastAnchor ? probe.lastAnchor.hopIndex : 0);
+    const nextP = planets.find(p => p.hopIndex === curIdx + 1);
+    if (nextP) {
+      focusX = probe.x * 0.62 + nextP.x * 0.38;
+      focusY = probe.y * 0.62 + nextP.y * 0.38;
+    }
+    cam.x += (focusX - cam.x) * Math.min(1, 6.5 * dt);
+    cam.y += (focusY - cam.y) * Math.min(1, 6.5 * dt);
+    cam.zoom += (cam.targetZoom - cam.zoom) * Math.min(1, 5 * dt);
+    if (cam.shakeTimer > 0) cam.shakeTimer -= dt;
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const pt = particles[i];
+      pt.life += dt;
+      pt.x += pt.vx * dt; pt.y += pt.vy * dt;
+      pt.vx *= 0.96; pt.vy *= 0.96;
+      if (pt.life >= pt.maxLife) particles.splice(i, 1);
+    }
+    for (let i = shockwaves.length - 1; i >= 0; i--) {
+      shockwaves[i].t += dt;
+      if (shockwaves[i].t >= shockwaves[i].dur) shockwaves.splice(i, 1);
+    }
+    for (let i = popups.length - 1; i >= 0; i--) {
+      popups[i].t += dt;
+      popups[i].y += 1.2 * dt;
+      if (popups[i].t >= popups[i].dur) popups.splice(i, 1);
+    }
+  }
+
+  // --- Render Loop ---
+  function render() {
+    if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    const W = canvas.width, H = canvas.height;
+    ctx.fillStyle = '#050813';
+    ctx.fillRect(0, 0, W, H);
+
+    const scale = PPU * cam.zoom * Math.min(1.15, Math.max(0.72, Math.min(W, H) / 850));
+    let shakeX = 0, shakeY = 0;
+    if (cam.shakeTimer > 0) {
+      shakeX = (Math.random() - 0.5) * 2 * cam.shakeMag * PPU;
+      shakeY = (Math.random() - 0.5) * 2 * cam.shakeMag * PPU;
+    }
+
+    const toScreenX = (wx) => W * 0.5 + (wx - cam.x) * scale + shakeX;
+    const toScreenY = (wy) => H * 0.5 - (wy - cam.y) * scale + shakeY;
+
+    // 1. Parallax Starfield
+    for (const s of stars) {
+      const sx = ((s.x - (cam.x + gameTime * 0.6) * s.p) % 36 + 36) % 36 - 18;
+      const sy = ((s.y + (cam.y + gameTime * 0.3) * s.p) % 36 + 36) % 36 - 18;
+      ctx.globalAlpha = s.a;
+      ctx.fillStyle = s.c;
+      ctx.beginPath();
+      ctx.arc(W * 0.5 + sx * (W / 32), H * 0.5 + sy * (H / 32), s.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // If Splash Screen is active, render Moving Background Planets & Orbiting Demo Probe!
+    if (splashActive) {
+      for (const sp of splashPlanets) {
+        const sx = W * 0.5 + sp.x * scale;
+        const sy = H * 0.5 - sp.y * scale;
+        const capR = sp.orbR * 1.4 * scale;
+        const orbR = sp.orbR * scale;
+        const bodyR = sp.r * scale;
+
+        const grad = ctx.createRadialGradient(sx, sy, orbR * 0.2, sx, sy, capR);
+        grad.addColorStop(0, hexAlpha(sp.color, 0.26));
+        grad.addColorStop(0.85, hexAlpha(sp.color, 0.14));
+        grad.addColorStop(1, hexAlpha(sp.color, 0));
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(sx, sy, capR, 0, Math.PI * 2); ctx.fill();
+
+        ctx.save();
+        ctx.translate(sx, sy);
+        ctx.rotate(-gameTime * 0.55 * sp.dir);
+        ctx.strokeStyle = hexAlpha(sp.color, 0.8);
+        ctx.lineWidth = 2.4;
+        ctx.setLineDash([9, 7]);
+        ctx.beginPath(); ctx.arc(0, 0, orbR, 0, Math.PI * 2); ctx.stroke();
+        ctx.restore();
+
+        const pGrad = ctx.createRadialGradient(sx - bodyR * 0.35, sy - bodyR * 0.35, bodyR * 0.1, sx, sy, bodyR);
+        pGrad.addColorStop(0, '#ffffff');
+        pGrad.addColorStop(0.28, sp.color);
+        pGrad.addColorStop(1, '#081026');
+        ctx.fillStyle = pGrad;
+        ctx.beginPath(); ctx.arc(sx, sy, bodyR, 0, Math.PI * 2); ctx.fill();
+
+        // Orbiting scout probe around each moving splash planet
+        const pAng = gameTime * 2.2 * sp.dir + sp.phase;
+        const prX = sx + Math.cos(pAng) * orbR;
+        const prY = sy + Math.sin(pAng) * orbR;
+        ctx.save();
+        ctx.translate(prX, prY);
+        ctx.rotate(pAng + (sp.dir > 0 ? Math.PI * 0.5 : -Math.PI * 0.5));
+        ctx.fillStyle = '#00ff88';
+        ctx.shadowColor = '#00ff88'; ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.moveTo(11, 0); ctx.lineTo(-8, -6); ctx.lineTo(-5, 0); ctx.lineTo(-8, 6);
+        ctx.closePath(); ctx.fill();
+        ctx.restore();
+      }
+      return;
+    }
+
+    // 2. Gameplay Planets & Gravity Zones
+    for (const p of planets) {
+      if (p.collapsed) continue;
+      const sx = toScreenX(p.x), sy = toScreenY(p.y);
+      const capR = p.captureRadius * scale * (p.pulsing ? (0.94 + (p.pulseMult - 0.78) * 0.2) : 1);
+      const orbR = p.orbitRadius * scale;
+      const bodyR = p.planetRadius * scale * (p.decaying ? Math.max(0.35, 1 - aRatio(p)) : 1);
+
+      const grad = ctx.createRadialGradient(sx, sy, orbR * 0.2, sx, sy, capR);
+      grad.addColorStop(0, hexAlpha(p.color, 0.22));
+      grad.addColorStop(0.85, hexAlpha(p.color, 0.14));
+      grad.addColorStop(1, hexAlpha(p.color, 0));
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.arc(sx, sy, capR, 0, Math.PI * 2); ctx.fill();
+
+      ctx.save();
+      ctx.translate(sx, sy);
+      ctx.rotate(-gameTime * 0.35 * p.dir * p.pulseMult);
+      ctx.strokeStyle = hexAlpha(p.color, 0.85);
+      ctx.lineWidth = 2.4;
+      ctx.setLineDash([9, 7]);
+      ctx.beginPath(); ctx.arc(0, 0, orbR, 0, Math.PI * 2); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+
+      const pGrad = ctx.createRadialGradient(sx - bodyR * 0.35, sy - bodyR * 0.35, bodyR * 0.1, sx, sy, bodyR);
+      pGrad.addColorStop(0, '#ffffff');
+      pGrad.addColorStop(0.25, p.color);
+      pGrad.addColorStop(1, '#081026');
+      ctx.fillStyle = pGrad;
+      ctx.beginPath(); ctx.arc(sx, sy, bodyR, 0, Math.PI * 2); ctx.fill();
+
+      let badge = '';
+      if (p.decaying) badge = 'DECAYING ORBIT';
+      else if (p.pulsing) badge = 'PULSAR';
+      else if (p.moving) badge = 'MOVING PLANET';
+      else if (p.tier >= 2) badge = p.dir > 0 ? 'COUNTER-CLOCKWISE' : 'CLOCKWISE';
+      if (badge) {
+        ctx.font = 'bold 11px Segoe UI, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = p.color;
+        ctx.fillText(badge, sx, sy + orbR + 18);
+      }
+    }
+
+    // 3. Star Shards
+    for (const s of shards) {
+      if (s.collected) continue;
+      const sx = toScreenX(s.x), sy = toScreenY(s.y + Math.sin(gameTime * 4 + s.phase) * 0.12);
+      ctx.save();
+      ctx.translate(sx, sy);
+      ctx.rotate(gameTime * 1.5 + s.phase);
+      ctx.fillStyle = '#ffd644';
+      ctx.shadowColor = '#ffd644'; ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.moveTo(0, -10); ctx.lineTo(8, 0); ctx.lineTo(0, 10); ctx.lineTo(-8, 0);
+      ctx.closePath(); ctx.fill();
+      ctx.restore();
+    }
+
+    // 4. Hazards
+    for (const h of hazards) {
+      if (h.dead) continue;
+      const sx = toScreenX(h.x), sy = toScreenY(h.y);
+      ctx.save();
+      ctx.translate(sx, sy);
+      if (h.type === 'laser') {
+        ctx.rotate(-h.rot);
+        const laserOn = Math.sin(gameTime * 2.2 + h.phase) > -0.35;
+        const halfL = 1.35 * scale;
+        ctx.strokeStyle = laserOn ? '#ff2a5f' : 'rgba(255,42,95,0.25)';
+        ctx.lineWidth = laserOn ? 5 : 1.5;
+        ctx.beginPath(); ctx.moveTo(0, -halfL); ctx.lineTo(0, halfL); ctx.stroke();
+      } else if (h.type === 'blackhole') {
+        const bhR = h.r * scale;
+        ctx.strokeStyle = 'rgba(255, 110, 60, 0.85)';
+        ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.arc(0, 0, bhR * 1.3, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = '#03040a';
+        ctx.beginPath(); ctx.arc(0, 0, bhR * 0.85, 0, Math.PI * 2); ctx.fill();
+      } else {
+        ctx.rotate(h.rot);
+        const hr = h.r * scale;
+        ctx.fillStyle = '#5a142b';
+        ctx.strokeStyle = '#ff2a5f';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        for (let i = 0; i < 7; i++) {
+          const a = (i / 7) * Math.PI * 2;
+          const rad = hr * (i % 2 === 0 ? 1 : 0.78);
+          if (i === 0) ctx.moveTo(Math.cos(a) * rad, Math.sin(a) * rad);
+          else ctx.lineTo(Math.cos(a) * rad, Math.sin(a) * rad);
+        }
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // 5. Dotted Predicted Path Line
+    if ((probe.state === STATE.LOCKING || probe.state === STATE.ORBIT) && probe.anchor) {
+      const a = probe.anchor;
+      const rx = probe.x - a.x, ry = probe.y - a.y;
+      const rLen = Math.hypot(rx, ry) || 1;
+      const tx = a.dir * (-ry / rLen), ty = a.dir * (rx / rLen);
+      const aim = checkTangentAim(probe.x, probe.y, tx, ty, a.hopIndex);
+
+      const px = toScreenX(probe.x), py = toScreenY(probe.y);
+      const ex = toScreenX(probe.x + tx * 6.2), ey = toScreenY(probe.y + ty * 6.2);
+      ctx.save();
+      ctx.strokeStyle = aim.hit ? '#00ff88' : 'rgba(190, 235, 255, 0.45)';
+      ctx.lineWidth = aim.hit ? 3.2 : 2.2;
+      ctx.setLineDash([6, 7]);
+      ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(ex, ey); ctx.stroke();
+      ctx.restore();
+    }
+
+    // 6. Probe Trail & Hull
+    const hull = HULLS[equippedHull] || HULLS[0];
+    if (probe.trail.length > 1) {
+      for (let i = 1; i < probe.trail.length; i++) {
+        const t0 = probe.trail[i - 1], t1 = probe.trail[i];
+        const ratio = i / probe.trail.length;
+        ctx.strokeStyle = hexAlpha(hull.c1, ratio * 0.85);
+        ctx.lineWidth = ratio * 8;
+        ctx.beginPath();
+        ctx.moveTo(toScreenX(t0.x), toScreenY(t0.y));
+        ctx.lineTo(toScreenX(t1.x), toScreenY(t1.y));
+        ctx.stroke();
+      }
+    }
+
+    if (probe.state !== STATE.DEAD) {
+      const px = toScreenX(probe.x), py = toScreenY(probe.y);
+      ctx.save();
+      ctx.translate(px, py);
+      ctx.rotate(-probe.heading);
+      ctx.fillStyle = hull.c1;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.8;
+      ctx.shadowColor = hull.c1; ctx.shadowBlur = 14;
+      ctx.beginPath();
+      ctx.moveTo(13, 0); ctx.lineTo(-10, -8); ctx.lineTo(-6, 0); ctx.lineTo(-10, 8);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+
+      if (probe.warpTimer > 0) {
+        ctx.strokeStyle = '#00f0ff';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.arc(0, 0, 19, 0, Math.PI * 2); ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // 7. Shockwaves, Particles & World Popups
+    for (const sw of shockwaves) {
+      const prog = sw.t / sw.dur;
+      const r = (sw.r + (sw.maxR - sw.r) * prog) * scale;
+      ctx.strokeStyle = hexAlpha(sw.color, 1 - prog);
+      ctx.lineWidth = 3 * (1 - prog);
+      ctx.beginPath(); ctx.arc(toScreenX(sw.x), toScreenY(sw.y), r, 0, Math.PI * 2); ctx.stroke();
+    }
+    for (const pt of particles) {
+      const alpha = 1 - pt.life / pt.maxLife;
+      ctx.fillStyle = hexAlpha(pt.color, alpha);
+      ctx.beginPath(); ctx.arc(toScreenX(pt.x), toScreenY(pt.y), pt.r * (1 - pt.life / pt.maxLife), 0, Math.PI * 2); ctx.fill();
+    }
+    for (const pop of popups) {
+      const alpha = Math.min(1, (1 - pop.t / pop.dur) * 1.5);
+      ctx.font = '900 14px Segoe UI, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = hexAlpha(pop.color, alpha);
+      ctx.fillText(pop.text, toScreenX(pop.x), toScreenY(pop.y));
+    }
+  }
+
+  function aRatio(p) { return Math.min(1, p.accumRadians / (Math.PI * 4)); }
+  function hexAlpha(hex, a) {
+    const c = hex.replace('#', '');
+    const r = parseInt(c.substring(0, 2), 16), g = parseInt(c.substring(2, 4), 16), b = parseInt(c.substring(4, 6), 16);
+    return `rgba(${r},${g},${b},${Math.max(0, Math.min(1, a))})`;
+  }
+
+  // --- Controls ---
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' || e.code === 'Enter') {
+      e.preventDefault();
+      if (document.getElementById('gameOverModal').classList.contains('active')) {
+        startNewRun();
+      } else {
+        releaseProbe();
+      }
+    }
+  });
+  canvas.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    releaseProbe();
+  });
+
+  // UI Buttons
+  document.getElementById('btnRetry').onclick = () => startNewRun();
+  document.getElementById('btnStartRun').onclick = () => startNewRun();
+  document.getElementById('btnPause').onclick = () => { isPaused = !isPaused; };
+  document.getElementById('btnMute').onclick = () => {
+    isMuted = !isMuted;
+    document.getElementById('btnMute').style.opacity = isMuted ? '0.45' : '1';
+  };
+  document.getElementById('btnGoHome').onclick = () => {
+    document.getElementById('gameOverModal').classList.remove('active');
+    document.getElementById('homeModal').classList.add('active');
+  };
+  document.getElementById('btnCycleTier').onclick = () => {
+    startTier = (startTier % 5) + 1;
+    const t = TIERS[startTier - 1];
+    document.getElementById('btnCycleTier').textContent = `Tier ${t.num}: ${t.name}`;
+  };
+  document.getElementById('btnCycleSeed').onclick = () => {
+    dailySeedMode = !dailySeedMode;
+    document.getElementById('btnCycleSeed').textContent = dailySeedMode ? 'Daily Seed Challenge' : 'Endless Cosmic Void';
+  };
+
+  function openHullsModal() {
+    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+    document.getElementById('hullShardsText').textContent = `AVAILABLE SHARDS: ◆ ${totalShards}`;
+    const list = document.getElementById('hullsList');
+    list.innerHTML = '';
+    HULLS.forEach(h => {
+      const unlocked = unlockedHulls.includes(h.id);
+      const eq = equippedHull === h.id;
+      const div = document.createElement('div');
+      div.className = 'hull-item';
+      div.innerHTML = `<div class="hull-info"><h4 style="color:${h.c1}">${h.name}</h4><p>${h.desc}</p></div>`;
+      const btn = document.createElement('button');
+      btn.className = 'hull-btn';
+      btn.textContent = eq ? 'EQUIPPED' : (unlocked ? 'EQUIP' : `UNLOCK ◆${h.cost}`);
+      btn.onclick = () => {
+        if (unlocked) {
+          equippedHull = h.id;
+          localStorage.setItem('OL_Hull', String(equippedHull));
+          openHullsModal();
+        } else if (totalShards >= h.cost) {
+          totalShards -= h.cost;
+          unlockedHulls.push(h.id);
+          equippedHull = h.id;
+          localStorage.setItem('OL_Shards', String(totalShards));
+          localStorage.setItem('OL_Unlocked', JSON.stringify(unlockedHulls));
+          localStorage.setItem('OL_Hull', String(equippedHull));
+          playShardSfx();
+          updateHUD();
+          openHullsModal();
+        }
+      };
+      div.appendChild(btn);
+      list.appendChild(div);
+    });
+    document.getElementById('hullsModal').classList.add('active');
+  }
+  document.getElementById('btnHullsTop').onclick = openHullsModal;
+  document.getElementById('btnGoHulls').onclick = openHullsModal;
+  document.getElementById('btnHomeHulls').onclick = openHullsModal;
+  document.getElementById('btnCloseHulls').onclick = () => {
+    document.getElementById('hullsModal').classList.remove('active');
+    if (probe.state === STATE.DEAD) startNewRun();
+  };
+
+  function openLbModal() {
+    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+    const entries = [
+      { name: 'NOVA-9', score: 18920, tier: 5 },
+      { name: 'VORTEX', score: 14200, tier: 4 },
+      { name: 'LYRA-X', score: 9800, tier: 3 },
+      { name: 'YOU (PILOT)', score: Math.max(bestScore, score), tier: currentTier },
+      { name: 'ORION-7', score: 3200, tier: 2 }
+    ].sort((a, b) => b.score - a.score);
+    const lb = document.getElementById('lbList');
+    lb.innerHTML = entries.map((e, i) =>
+      `<div class="stat-row"><span class="stat-lbl">#${i + 1} ${e.name} (Tier ${e.tier})</span><span class="stat-val">${e.score.toLocaleString()}</span></div>`
+    ).join('');
+    document.getElementById('lbModal').classList.add('active');
+  }
+  document.getElementById('btnGoLb').onclick = openLbModal;
+  document.getElementById('btnHomeLb').onclick = openLbModal;
+  document.getElementById('btnCloseLb').onclick = () => {
+    document.getElementById('lbModal').classList.remove('active');
+    if (probe.state === STATE.DEAD) document.getElementById('gameOverModal').classList.add('active');
+  };
+
+  function loop(now) {
+    const dt = Math.min(0.05, (now - lastTime) / 1000);
+    lastTime = now;
+    update(dt, now);
+    render();
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
