@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace OrbitLauncher
 {
@@ -37,8 +38,8 @@ namespace OrbitLauncher
         private SpriteRenderer _captureDiscRenderer;
         private Transform _orbitRingTransform;
         private SpriteRenderer _orbitRingRenderer;
-        private TextMesh _labelText;
-        private SpriteRenderer _labelBg;
+        private Text _badgeUiText;
+        private Image _badgeUiBg;
         private Color _themeColor;
 
         private static readonly string[] PlanetSprites =
@@ -105,7 +106,7 @@ namespace OrbitLauncher
             float ringScale = (orbitRadius * 2f) / 4.64f;
             ringGo.transform.localScale = new Vector3(ringScale, ringScale, 1f);
 
-            // Add 4 directional arrow markers on the orbit ring so player can read CW vs CCW
+            // Add 4 clear directional arrow markers on the orbit ring so player can read CW vs CCW
             Sprite arrowSp = OrbitAssetFactory.GetSprite("hull_scout");
             for (int i = 0; i < 4; i++)
             {
@@ -114,14 +115,14 @@ namespace OrbitLauncher
                 arrowGo.transform.SetParent(_orbitRingTransform, false);
                 SpriteRenderer arSr = arrowGo.AddComponent<SpriteRenderer>();
                 arSr.sprite = arrowSp;
-                arSr.color = new Color(_themeColor.r, _themeColor.g, _themeColor.b, 0.75f);
+                arSr.color = new Color(_themeColor.r, _themeColor.g, _themeColor.b, 0.92f);
                 arSr.sortingOrder = -1;
                 float localR = 2.32f;
                 arrowGo.transform.localPosition = new Vector3(Mathf.Cos(ang) * localR, Mathf.Sin(ang) * localR, 0f);
                 Vector2 tangent = direction * new Vector2(-Mathf.Sin(ang), Mathf.Cos(ang));
                 float rotZ = Mathf.Atan2(tangent.y, tangent.x) * Mathf.Rad2Deg - 90f;
                 arrowGo.transform.localRotation = Quaternion.Euler(0f, 0f, rotZ);
-                arrowGo.transform.localScale = Vector3.one * 0.16f;
+                arrowGo.transform.localScale = Vector3.one * 0.30f;
             }
 
             // 3. Planet Core & Atmospheric Halo
@@ -146,42 +147,80 @@ namespace OrbitLauncher
             _glowRenderer.sortingOrder = 1;
             haloGo.transform.localScale = Vector3.one * 1.45f;
 
-            // 4. Pill Badge Label below orbit ring (matching GDD screenshots)
+            // 4. Crisp 9-Sliced World-Space UI Pill Badge below the orbit ring
             string badgeText = GetBadgeString();
             if (!string.IsNullOrEmpty(badgeText))
             {
-                GameObject labelGo = new GameObject("AnchorBadge");
-                labelGo.transform.SetParent(transform, false);
-                labelGo.transform.localPosition = new Vector3(0f, -orbitRadius - 0.55f, -0.5f);
-                labelGo.transform.localScale = Vector3.one * 0.065f;
+                GameObject badgeCanvasGo = new GameObject("AnchorBadgeCanvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
+                badgeCanvasGo.transform.SetParent(transform, false);
+                badgeCanvasGo.transform.localPosition = new Vector3(0f, -orbitRadius - 0.72f, -0.5f);
+                badgeCanvasGo.transform.localScale = Vector3.one * 0.0092f;
 
-                GameObject bgGo = new GameObject("BadgeBg");
-                bgGo.transform.SetParent(labelGo.transform, false);
-                _labelBg = bgGo.AddComponent<SpriteRenderer>();
-                _labelBg.sprite = OrbitAssetFactory.GetSprite("solid_disc");
-                _labelBg.color = new Color(0.02f, 0.05f, 0.12f, 0.82f);
-                _labelBg.sortingOrder = 8;
-                bgGo.transform.localScale = new Vector3(badgeText.Length * 0.48f + 1.4f, 1.35f, 1f);
+                Canvas badgeCanvas = badgeCanvasGo.GetComponent<Canvas>();
+                badgeCanvas.renderMode = RenderMode.WorldSpace;
+                badgeCanvas.sortingOrder = 15;
 
-                _labelText = labelGo.AddComponent<TextMesh>();
-                _labelText.text = badgeText;
-                _labelText.fontSize = 32;
-                _labelText.characterSize = 0.25f;
-                _labelText.anchor = TextAnchor.MiddleCenter;
-                _labelText.alignment = TextAlignment.Center;
-                _labelText.fontStyle = FontStyle.Bold;
-                _labelText.color = _themeColor;
-                MeshRenderer mr = labelGo.GetComponent<MeshRenderer>();
-                if (mr != null) mr.sortingOrder = 9;
+                RectTransform canvasRt = badgeCanvasGo.GetComponent<RectTransform>();
+                float pillWidth = Mathf.Max(290f, badgeText.Length * 20f + 76f);
+                float pillHeight = 68f;
+                canvasRt.sizeDelta = new Vector2(pillWidth, pillHeight);
+
+                GameObject bgGo = new GameObject("BadgePillBg", typeof(RectTransform), typeof(Image));
+                bgGo.transform.SetParent(badgeCanvasGo.transform, false);
+                RectTransform bgRt = bgGo.GetComponent<RectTransform>();
+                bgRt.anchorMin = Vector2.zero;
+                bgRt.anchorMax = Vector2.one;
+                bgRt.offsetMin = Vector2.zero;
+                bgRt.offsetMax = Vector2.zero;
+
+                _badgeUiBg = bgGo.GetComponent<Image>();
+                Sprite pillSprite = OrbitAssetFactory.GetSprite("ui_bar_track");
+                _badgeUiBg.sprite = pillSprite;
+                _badgeUiBg.type = (pillSprite != null && pillSprite.border.sqrMagnitude > 0f) ? Image.Type.Sliced : Image.Type.Simple;
+                _badgeUiBg.color = new Color(
+                    Mathf.Lerp(0.08f, _themeColor.r, 0.35f),
+                    Mathf.Lerp(0.06f, _themeColor.g, 0.35f),
+                    Mathf.Lerp(0.22f, _themeColor.b, 0.35f),
+                    0.95f);
+                _badgeUiBg.raycastTarget = false;
+
+                GameObject txtGo = new GameObject("BadgeLabel", typeof(RectTransform), typeof(Text), typeof(Outline), typeof(Shadow));
+                txtGo.transform.SetParent(bgGo.transform, false);
+                RectTransform txtRt = txtGo.GetComponent<RectTransform>();
+                txtRt.anchorMin = Vector2.zero;
+                txtRt.anchorMax = Vector2.one;
+                txtRt.offsetMin = new Vector2(14f, 4f);
+                txtRt.offsetMax = new Vector2(-14f, -4f);
+
+                _badgeUiText = txtGo.GetComponent<Text>();
+                Font uiFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                if (uiFont == null) uiFont = Resources.GetBuiltinResource<Font>("Arial.ttf");
+                _badgeUiText.font = uiFont;
+                _badgeUiText.text = badgeText;
+                _badgeUiText.fontSize = 30;
+                _badgeUiText.fontStyle = FontStyle.Bold;
+                _badgeUiText.alignment = TextAnchor.MiddleCenter;
+                _badgeUiText.horizontalOverflow = HorizontalWrapMode.Overflow;
+                _badgeUiText.verticalOverflow = VerticalWrapMode.Overflow;
+                _badgeUiText.color = Color.Lerp(_themeColor, Color.white, 0.38f);
+                _badgeUiText.raycastTarget = false;
+
+                Outline ol = txtGo.GetComponent<Outline>();
+                ol.effectColor = new Color(0.02f, 0.01f, 0.08f, 0.96f);
+                ol.effectDistance = new Vector2(2f, -2f);
+
+                Shadow sh = txtGo.GetComponent<Shadow>();
+                sh.effectColor = new Color(0f, 0f, 0f, 0.85f);
+                sh.effectDistance = new Vector2(0f, -3f);
             }
         }
 
         private string GetBadgeString()
         {
-            if (isDecaying) return "DECAYING ORBIT";
-            if (isPulsing) return "PULSAR";
-            if (isMoving) return "MOVING PLANET";
-            if (tierIndex >= 2) return direction > 0 ? "COUNTER-CLOCKWISE" : "CLOCKWISE";
+            if (isDecaying) return "⚠ DECAYING ORBIT";
+            if (isPulsing) return "✦ PULSAR GRAVITY";
+            if (isMoving) return "⇄ MOVING PLANET";
+            if (tierIndex >= 2) return direction > 0 ? "↺ COUNTER-CLOCKWISE" : "↻ CLOCKWISE ORBIT";
             return "";
         }
 
